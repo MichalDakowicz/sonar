@@ -26,3 +26,5 @@ dist-ssr
 plan.md
 .env
 .env.local
+.firebase
+.firebaserc

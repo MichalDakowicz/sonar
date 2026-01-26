@@ -140,7 +140,7 @@ export default function EditAlbumModal({ isOpen, onClose, album, onUpdate, onDel
                  <div className="flex flex-wrap gap-1 mb-1 max-h-16 overflow-y-auto">
                         {artist.map((a, i) => (
                             <span key={i} className="flex items-center gap-1 bg-neutral-800 text-[10px] px-1.5 py-0.5 rounded text-neutral-300 border border-neutral-700">
-                                <span className="truncate max-w-[80px]" title={a}>{a}</span>
+                                <span className="truncate max-w-20" title={a}>{a}</span>
                                 <button onClick={() => removeArtist(i)} className="hover:text-white cursor-pointer"><X size={10} /></button>
                             </span>
                         ))}
@@ -154,7 +154,7 @@ export default function EditAlbumModal({ isOpen, onClose, album, onUpdate, onDel
                         placeholder="Add Artist"
                         className="w-full rounded bg-neutral-950 border border-neutral-800 px-2 py-1 text-xs text-white focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
-                     <button onClick={addArtist} className="bg-neutral-800 text-white px-2 py-1 rounded border border-neutral-700 hover:bg-neutral-700 cursor-pointer text-[10px] font-bold text-emerald-500">Add</button>
+                     <button onClick={addArtist} className="bg-neutral-800 text-white px-2 py-1 rounded border border-neutral-700 hover:bg-neutral-700 cursor-pointer text-[10px] font-bold">Add</button>
                 </div>
               </div>
             </div>

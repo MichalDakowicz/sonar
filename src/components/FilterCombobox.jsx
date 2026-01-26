@@ -41,7 +41,7 @@ export function FilterCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn("w-[200px] justify-between border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-white", className)}
+          className={cn("w-50 justify-between border-neutral-800 bg-neutral-900 text-neutral-400 hover:bg-neutral-800 hover:text-white", className)}
         >
           <div className="flex items-center gap-2 truncate">
              {Icon && <Icon className="h-4 w-4 shrink-0 opacity-50" />}
@@ -54,7 +54,7 @@ export function FilterCombobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0 bg-neutral-950 border-neutral-800">
+      <PopoverContent className="w-50 p-0 bg-neutral-950 border-neutral-800">
         <Command className="bg-neutral-950">
           <CommandInput placeholder={searchPlaceholder} className="h-9 border-neutral-800 text-white placeholder:text-neutral-500" />
           <CommandList>

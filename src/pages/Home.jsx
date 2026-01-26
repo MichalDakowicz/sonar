@@ -236,7 +236,7 @@ export default function Home() {
                 onChange={setSortBy}
                 placeholder="Sort By"
                 icon={SortAsc}
-                className="w-[160px] shrink-0"
+                className="w-40 shrink-0"
             />
 
             <FilterCombobox
@@ -245,7 +245,7 @@ export default function Home() {
                 onChange={setFilterFormat}
                 placeholder="All Formats"
                 icon={Disc}
-                className="w-[150px] shrink-0"
+                className="w-37.5 shrink-0"
             />
 
             <FilterCombobox
@@ -255,7 +255,7 @@ export default function Home() {
                 placeholder="All Artists"
                 searchPlaceholder="Search artists..."
                 icon={Mic2}
-                className="w-[180px] shrink-0"
+                className="w-45 shrink-0"
             />
 
             <FilterCombobox
@@ -265,7 +265,7 @@ export default function Home() {
                 placeholder="All Years"
                 searchPlaceholder="Search years..."
                 icon={Calendar}
-                className="w-[130px] shrink-0"
+                className="w-32.5 shrink-0"
             />
           </div>
         </div>
