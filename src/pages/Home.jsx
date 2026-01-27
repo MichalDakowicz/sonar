@@ -1,14 +1,16 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useAlbums } from "../hooks/useAlbums";
+import { Link } from "react-router-dom";
 import AlbumCard from "../features/albums/AlbumCard";
 import AlbumRow from "../features/albums/AlbumRow";
 import AddAlbumModal from "../features/albums/AddAlbumModal";
 import EditAlbumModal from "../features/albums/EditAlbumModal";
+import StatsModal from "../features/stats/StatsModal";
 import { FilterCombobox } from "../components/FilterCombobox";
 import { 
   LogOut, Plus, LayoutGrid, List as ListIcon, 
-  Search, Shuffle, Filter, SortAsc, Disc, Mic2, Calendar
+  Search, Shuffle, SortAsc, Disc, Mic2, Calendar, Tags, Layers, Library, BarChart3, Clock
 } from "lucide-react";
 
 export default function Home() {
@@ -16,22 +18,27 @@ export default function Home() {
   const { albums, loading, addAlbum, updateAlbum, removeAlbum } = useAlbums();
   
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
+  const [groupBy, setGroupBy] = useState("none"); // "none" | "artist"
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterFormat, setFilterFormat] = useState("All");
   const [filterArtist, setFilterArtist] = useState("All");
   const [filterYear, setFilterYear] = useState("All");
+  const [filterGenre, setFilterGenre] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("Collection");
   const [sortBy, setSortBy] = useState("addedAt"); // "addedAt", "releaseDate", "artist", "title"
   const [highlightedAlbumId, setHighlightedAlbumId] = useState(null);
 
   // Map to store refs of album elements for scrolling
   const itemsRef = useRef(new Map());
 
-  // Extract unique artists and years for filters
-  const { uniqueArtists, uniqueYears } = useMemo(() => {
+  // Extract unique artists, years, and genres for filters
+  const { uniqueArtists, uniqueYears, uniqueGenres } = useMemo(() => {
     const artists = new Set();
     const years = new Set();
+    const genres = new Set();
 
     albums.forEach(album => {
       // Normalize to array
@@ -56,11 +63,16 @@ export default function Home() {
         const y = album.releaseDate.substring(0, 4);
         if (y) years.add(y);
       }
+
+      if (album.genres && Array.isArray(album.genres)) {
+        album.genres.forEach(g => genres.add(g));
+      }
     });
 
     return {
       uniqueArtists: Array.from(artists).sort(),
-      uniqueYears: Array.from(years).sort((a, b) => b - a)
+      uniqueYears: Array.from(years).sort((a, b) => b - a),
+      uniqueGenres: Array.from(genres).sort()
     };
   }, [albums]);
 
@@ -87,6 +99,12 @@ export default function Home() {
         return formats.includes(filterFormat);
       });
     }
+    
+    // Filter by Status (Default to just "Collection" if "All" is not explicit, but here user selects status)
+    if (filterStatus !== "All") {
+       // Legacy albums didn't have status, so assume "Collection" for undefined
+       result = result.filter(a => (a.status || 'Collection') === filterStatus);
+    }
 
     // Filter by Artist
     if (filterArtist !== "All") {
@@ -111,9 +129,15 @@ export default function Home() {
       result = result.filter(a => a.releaseDate && a.releaseDate.startsWith(filterYear));
     }
 
+    // Filter by Genre
+    if (filterGenre !== "All") {
+      result = result.filter(a => a.genres && a.genres.includes(filterGenre));
+    }
+
     // Sort
     result.sort((a, b) => {
       if (sortBy === "addedAt") return b.addedAt - a.addedAt;
+      if (sortBy === "rating") return (b.rating || 0) - (a.rating || 0);
       if (sortBy === "releaseDate") return new Date(b.releaseDate) - new Date(a.releaseDate);
       if (sortBy === "artist") {
          // Sort by first artist in list
@@ -126,7 +150,27 @@ export default function Home() {
     });
 
     return result;
-  }, [albums, searchQuery, filterFormat, filterArtist, filterYear, sortBy]);
+  }, [albums, searchQuery, filterFormat, filterArtist, filterYear, filterGenre, filterStatus, sortBy]);
+
+  // Derived state for grouped albums
+  const groupedAlbums = useMemo(() => {
+    if (groupBy !== 'artist') return null;
+
+    const groups = {};
+    filteredAlbums.forEach(album => {
+        const primaryArtist = Array.isArray(album.artist) ? album.artist[0] : album.artist;
+        const key = primaryArtist || "Unknown Artist";
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(album);
+    });
+
+    // Sort groups by key
+    const sortedKeys = Object.keys(groups).sort();
+    return sortedKeys.map(key => ({
+        title: key,
+        albums: groups[key]
+    }));
+  }, [filteredAlbums, groupBy]);
 
   // Effect to handle scrolling when highlightedAlbumId changes
   useEffect(() => {
@@ -166,6 +210,22 @@ export default function Home() {
           </div>
           
           <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsStatsModalOpen(true)}
+              className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
+            >
+              <BarChart3 size={16} />
+              <span className="hidden sm:inline">Overview</span>
+            </button>
+
+            <Link 
+              to="/history"
+              className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
+            >
+              <Clock size={16} />
+              <span className="hidden sm:inline">History</span>
+            </Link>
+
              <button 
               onClick={handleRandomPick}
               className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
@@ -214,20 +274,34 @@ export default function Home() {
                 <button 
                   onClick={() => setViewMode("grid")}
                   className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                  title="Grid View"
                 >
                   <LayoutGrid size={18} />
                 </button>
                 <button 
                   onClick={() => setViewMode("list")}
                   className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "list" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                  title="List View"
                 >
                   <ListIcon size={18} />
                 </button>
             </div>
 
+             <div className="flex items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
+                <button 
+                  onClick={() => setGroupBy(groupBy === "artist" ? "none" : "artist")}
+                  className={`flex items-center gap-2 rounded px-2 py-1.5 text-sm font-medium transition-colors cursor-pointer ${groupBy === "artist" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                  title="Group by Artist"
+                >
+                  <Layers size={16} />
+                  <span className="hidden sm:inline">Group</span>
+                </button>
+             </div>
+
             <FilterCombobox
                 options={[
                     { value: "addedAt", label: "Recently Added" },
+                    { value: "rating", label: "Highest Rated" },
                     { value: "releaseDate", label: "Release Date" },
                     { value: "artist", label: "Artist" },
                     { value: "title", label: "Title" },
@@ -237,6 +311,15 @@ export default function Home() {
                 placeholder="Sort By"
                 icon={SortAsc}
                 className="w-40 shrink-0"
+            />
+
+            <FilterCombobox
+                options={["Collection", "Wishlist", "Pre-order", "All"]}
+                value={filterStatus}
+                onChange={setFilterStatus}
+                placeholder="All Status"
+                icon={Library}
+                className="w-37.5 shrink-0"
             />
 
             <FilterCombobox
@@ -256,6 +339,16 @@ export default function Home() {
                 searchPlaceholder="Search artists..."
                 icon={Mic2}
                 className="w-45 shrink-0"
+            />
+
+            <FilterCombobox
+                options={uniqueGenres}
+                value={filterGenre}
+                onChange={setFilterGenre}
+                placeholder="All Genres"
+                searchPlaceholder="Search genres..."
+                icon={Tags}
+                className="w-40 shrink-0"
             />
 
             <FilterCombobox
@@ -285,6 +378,51 @@ export default function Home() {
               Add your first album
             </button>
           </div>
+        ) : groupedAlbums ? (
+            <div className="flex flex-col gap-8 pb-20">
+            {groupedAlbums.map(group => (
+                <div key={group.title}>
+                    <h2 className="text-xl font-bold text-white mb-4 pl-2 flex items-center gap-2">
+                            <div className="h-5 w-1 bg-emerald-500 rounded-full" />
+                            {group.title} 
+                            <span className="text-sm font-normal text-neutral-500">({group.albums.length})</span>
+                    </h2>
+                    {viewMode === "grid" ? (
+                        <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 p-2">
+                            {group.albums.map((album) => (
+                            <AlbumCard 
+                                key={album.id} 
+                                album={album} 
+                                onClick={() => setEditingAlbum(album)}
+                                isHighlighted={highlightedAlbumId === album.id}
+                                innerRef={(node) => {
+                                    const map = itemsRef.current;
+                                    if (node) map.set(album.id, node);
+                                    else map.delete(album.id);
+                                }}
+                            />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-2">
+                            {group.albums.map((album) => (
+                            <AlbumRow 
+                                key={album.id} 
+                                album={album} 
+                                onClick={() => setEditingAlbum(album)}
+                                isHighlighted={highlightedAlbumId === album.id}
+                                innerRef={(node) => {
+                                    const map = itemsRef.current;
+                                    if (node) map.set(album.id, node);
+                                    else map.delete(album.id);
+                                }}
+                            />
+                            ))}
+                        </div>
+                    )}
+                </div>
+            ))}
+            </div>
         ) : (
           viewMode === "grid" ? (
             <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 p-2 pb-20">
@@ -340,6 +478,12 @@ export default function Home() {
         album={editingAlbum}
         onUpdate={updateAlbum}
         onDelete={removeAlbum}
+      />
+
+      <StatsModal 
+        isOpen={isStatsModalOpen}
+        onClose={() => setIsStatsModalOpen(false)}
+        albums={albums}
       />
     </div>
   );

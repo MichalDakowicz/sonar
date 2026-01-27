@@ -24,6 +24,7 @@ dist-ssr
 *.sw?
 
 plan.md
+feature_ideas.md
 .env
 .env.local
 .firebase
