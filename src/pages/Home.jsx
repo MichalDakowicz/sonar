@@ -1,26 +1,32 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useAlbums } from "../hooks/useAlbums";
+import { useToast } from "../components/ui/Toast";
 import { Link } from "react-router-dom";
 import AlbumCard from "../features/albums/AlbumCard";
 import AlbumRow from "../features/albums/AlbumRow";
 import AddAlbumModal from "../features/albums/AddAlbumModal";
 import EditAlbumModal from "../features/albums/EditAlbumModal";
 import StatsModal from "../features/stats/StatsModal";
-import { FilterCombobox } from "../components/FilterCombobox";
+import ImportExportModal from "../features/settings/ImportExportModal";
+import RandomSpinModal from "../features/albums/RandomSpinModal";
+import { FilterPanel } from "../components/FilterPanel";
 import { 
   LogOut, Plus, LayoutGrid, List as ListIcon, 
-  Search, Shuffle, SortAsc, Disc, Mic2, Calendar, Tags, Layers, Library, BarChart3, Clock
+  Search, Shuffle, Layers, BarChart3, Clock, Database, Share2
 } from "lucide-react";
 
 export default function Home() {
   const { logout, user } = useAuth();
   const { albums, loading, addAlbum, updateAlbum, removeAlbum } = useAlbums();
+  const { toast } = useToast();
   
   const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
   const [groupBy, setGroupBy] = useState("none"); // "none" | "artist"
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isSpinModalOpen, setIsSpinModalOpen] = useState(false);
   const [editingAlbum, setEditingAlbum] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterFormat, setFilterFormat] = useState("All");
@@ -186,17 +192,27 @@ export default function Home() {
 
   const handleRandomPick = () => {
     if (filteredAlbums.length === 0) return;
-    
-    // Clear previous highlight first to re-trigger effect if same album picked? 
-    // Not strictly needed but good practice if animation requires mounting
-    setHighlightedAlbumId(null);
-    
-    // Small timeout to allow state clear
-    setTimeout(() => {
-        const randomIndex = Math.floor(Math.random() * filteredAlbums.length);
-        const pick = filteredAlbums[randomIndex];
-        setHighlightedAlbumId(pick.id);
-    }, 10);
+    setIsSpinModalOpen(true);
+  };
+
+  const handleClearFilters = () => {
+    setFilterFormat("All");
+    setFilterArtist("All");
+    setFilterYear("All");
+    setFilterGenre("All");
+    setFilterStatus("Collection");
+    setSearchQuery("");
+  };
+
+  const handleShareShelf = () => {
+    if (!user) return;
+    const url = `${window.location.origin}/u/${user.uid}`;
+    navigator.clipboard.writeText(url);
+    toast({
+        title: "Link Copied!",
+        description: "Public shelf link copied to your clipboard.",
+        variant: "default"
+    });
   };
 
   return (
@@ -240,6 +256,22 @@ export default function Home() {
             >
               <Plus size={16} />
               <span className="hidden sm:inline">Add Album</span>
+            </button>
+
+            <button
+               onClick={() => setIsImportModalOpen(true)}
+               className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+               title="Import/Export Data"
+            >
+               <Database size={20} />
+            </button>
+
+            <button
+               onClick={handleShareShelf}
+               className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+               title="Share Public Link"
+            >
+               <Share2 size={20} />
             </button>
 
             <div className="h-6 w-px bg-neutral-800" />
@@ -298,68 +330,18 @@ export default function Home() {
                 </button>
              </div>
 
-            <FilterCombobox
-                options={[
-                    { value: "addedAt", label: "Recently Added" },
-                    { value: "rating", label: "Highest Rated" },
-                    { value: "releaseDate", label: "Release Date" },
-                    { value: "artist", label: "Artist" },
-                    { value: "title", label: "Title" },
-                ]}
-                value={sortBy}
-                onChange={setSortBy}
-                placeholder="Sort By"
-                icon={SortAsc}
-                className="w-40 shrink-0"
-            />
-
-            <FilterCombobox
-                options={["Collection", "Wishlist", "Pre-order", "All"]}
-                value={filterStatus}
-                onChange={setFilterStatus}
-                placeholder="All Status"
-                icon={Library}
-                className="w-37.5 shrink-0"
-            />
-
-            <FilterCombobox
-                options={["Digital", "Vinyl", "CD", "Cassette"]}
-                value={filterFormat}
-                onChange={setFilterFormat}
-                placeholder="All Formats"
-                icon={Disc}
-                className="w-37.5 shrink-0"
-            />
-
-            <FilterCombobox
-                options={uniqueArtists}
-                value={filterArtist}
-                onChange={setFilterArtist}
-                placeholder="All Artists"
-                searchPlaceholder="Search artists..."
-                icon={Mic2}
-                className="w-45 shrink-0"
-            />
-
-            <FilterCombobox
-                options={uniqueGenres}
-                value={filterGenre}
-                onChange={setFilterGenre}
-                placeholder="All Genres"
-                searchPlaceholder="Search genres..."
-                icon={Tags}
-                className="w-40 shrink-0"
-            />
-
-            <FilterCombobox
-                options={uniqueYears}
-                value={filterYear}
-                onChange={setFilterYear}
-                placeholder="All Years"
-                searchPlaceholder="Search years..."
-                icon={Calendar}
-                className="w-32.5 shrink-0"
-            />
+             <FilterPanel 
+               filterFormat={filterFormat} setFilterFormat={setFilterFormat}
+               filterArtist={filterArtist} setFilterArtist={setFilterArtist}
+               filterGenre={filterGenre} setFilterGenre={setFilterGenre}
+               filterYear={filterYear} setFilterYear={setFilterYear}
+               filterStatus={filterStatus} setFilterStatus={setFilterStatus}
+               sortBy={sortBy} setSortBy={setSortBy}
+               uniqueArtists={uniqueArtists}
+               uniqueGenres={uniqueGenres}
+               uniqueYears={uniqueYears}
+               onClearAll={handleClearFilters}
+             />
           </div>
         </div>
 
@@ -479,11 +461,29 @@ export default function Home() {
         onUpdate={updateAlbum}
         onDelete={removeAlbum}
       />
+      
+      <ImportExportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        albums={albums}
+        addAlbum={addAlbum}
+        removeAlbum={removeAlbum}
+      />
 
       <StatsModal 
         isOpen={isStatsModalOpen}
         onClose={() => setIsStatsModalOpen(false)}
         albums={albums}
+      />
+
+      <RandomSpinModal
+        isOpen={isSpinModalOpen}
+        onClose={() => setIsSpinModalOpen(false)}
+        albums={filteredAlbums}
+        onSelect={(id) => {
+            setHighlightedAlbumId(id);
+            // Optionally scroll to it after modal closes?
+        }}
       />
     </div>
   );

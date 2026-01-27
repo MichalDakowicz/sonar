@@ -189,7 +189,7 @@ export default function StatsModal({ isOpen, onClose, albums }) {
                             const heightPercent = (item.count / max) * 100;
 
                              return (
-                                <div key={item.decade} className="flex-1 flex flex-col items-center justify-end h-full gap-2 min-w-[40px] group">
+                                <div key={item.decade} className="flex-1 flex flex-col items-center justify-end h-full gap-2 min-w-10 group">
                                     <div className="text-xs text-neutral-400 opacity-0 group-hover:opacity-100 transition-opacity mb-auto">{item.count}</div>
                                      <div 
                                         className="w-full bg-neutral-800 hover:bg-purple-500/80 transition-colors rounded-t-sm"

@@ -19,10 +19,12 @@ export function useAlbums() {
     const unsubscribe = onValue(albumsRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const loadedAlbums = Object.entries(data).map(([key, value]) => ({
-          id: key,
-          ...value,
-        }));
+        const loadedAlbums = Object.entries(data)
+          .map(([key, value]) => ({
+            id: key,
+            ...value,
+          }))
+          .filter(album => album.title); // basic validation to filter out ghost nodes/corrupt data
         // Sort by addedAt desc by default
         loadedAlbums.sort((a, b) => b.addedAt - a.addedAt);
         setAlbums(loadedAlbums);

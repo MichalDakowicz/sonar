@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        "albums": {
+          ".read": true,
+          ".write": "$uid === auth.uid"
+        }
+      }
+    }
+  }
+}

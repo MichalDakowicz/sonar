@@ -2,7 +2,7 @@ import { Disc, Star, Heart, Clock, StickyNote, Play } from "lucide-react";
 import { useLogListen } from "../../hooks/useHistory";
 import { formatRelativeTime } from "../../lib/utils";
 
-export default function AlbumCard({ album, onClick, isHighlighted, innerRef }) {
+export default function AlbumCard({ album, onClick, isHighlighted, innerRef, readOnly = false }) {
   const { logListen } = useLogListen();
   
   const handleLogListen = (e) => {
@@ -65,6 +65,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef }) {
         {/* Spotify Deep Link & Play Button */}
         <div className="absolute bottom-2 right-2 flex gap-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
              {/* Log Listen Button */}
+            {!readOnly && (
             <button
                 onClick={handleLogListen}
                 className="p-2 rounded-full bg-white text-black shadow-lg hover:bg-neutral-200 hover:scale-110 transition-all duration-200 flex items-center justify-center"
@@ -72,6 +73,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef }) {
             >
                 <Play size={16} className="fill-black ml-0.5" />
             </button>
+            )}
 
             {/* Spotify Link */}
             {album.url && (

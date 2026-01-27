@@ -322,7 +322,7 @@ export default function AddAlbumModal({ isOpen, onClose, onAdd }) {
                                 />
                             </div>
                             <div>
-                                <div className="flex flex-wrap gap-1 mb-1 max-h-[36px] overflow-y-auto custom-scrollbar">
+                                <div className="flex flex-wrap gap-1 mb-1 max-h-9 overflow-y-auto custom-scrollbar">
                                     {artist.map((a, i) => (
                                         <span key={i} className="flex items-center gap-1 bg-neutral-800 text-[10px] px-2 py-0.5 rounded text-neutral-300 border border-neutral-700">
                                             {a}
