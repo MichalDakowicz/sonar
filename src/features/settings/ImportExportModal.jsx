@@ -55,40 +55,95 @@ export default function ImportExportModal({ isOpen, onClose, albums, addAlbum, r
 
     setIsImporting(true);
     setImportLog([]);
-    const lines = importText.split('\n').filter(l => l.trim());
     
     const logs = [];
+    const updateLogs = () => setImportLog([...logs]);
+
+    // TRY JSON IMPORT FIRST
+    try {
+        const trimmed = importText.trim();
+        // Heuristic: if it looks like JSON array, try to parse it strictly
+        if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+            const parsed = JSON.parse(trimmed);
+            if (Array.isArray(parsed)) {
+                let count = 0;
+                for (const item of parsed) {
+                    count++;
+                    try {
+                        if (!item.title || !item.artist) throw new Error("Missing title or artist");
+                        
+                        const normalizeArtist = (val) => {
+                            if (Array.isArray(val)) return val.join(", ").toLowerCase();
+                            return (val || "").toString().toLowerCase();
+                        }
+
+                        const isDuplicate = albums.some(a => 
+                            (a.spotifyId && item.spotifyId && a.spotifyId === item.spotifyId) || 
+                            (a.title.toLowerCase() === item.title.toLowerCase() && normalizeArtist(a.artist) === normalizeArtist(item.artist))
+                        );
+                        
+                        if (isDuplicate) {
+                            logs.push({ status: 'error', message: `Skipped Duplicate: ${item.title}` });
+                        } else {
+                            await addAlbum({
+                                ...item,
+                                addedAt: item.addedAt || Date.now(),
+                            });
+                            logs.push({ status: 'success', message: `Imported: ${item.title}` });
+                        }
+                    } catch(err) {
+                        logs.push({ status: 'error', message: `Failed item: ${item.title || 'Unknown'} - ${err.message}` });
+                    }
+                    
+                    // Update UI only every 10 items to prevent freezing
+                    if (count % 10 === 0) updateLogs();
+                }
+                updateLogs();
+                setIsImporting(false);
+                if (logs.every(l => l.status === 'success')) setImportText(""); 
+                return;
+            }
+        }
+    } catch (e) {
+        console.error("JSON Import failed, falling back to URL mode", e);
+        // If it looked like JSON but failed to parse, warn the user instead of trying URLs
+        if (importText.trim().startsWith('[')) {
+             logs.push({ status: 'error', message: `Invalid JSON format: ${e.message}` });
+             updateLogs();
+             setIsImporting(false);
+             return;
+        }
+    }
+
+    const lines = importText.split('\n').filter(l => l.trim());
+    let count = 0;
     
     for (const line of lines) {
+        count++;
         try {
-            // Basic validation
             if (!line.includes('spotify.com') && !line.includes('spotify:album:')) {
                 throw new Error("Not a recognized Spotify URL/URI");
             }
-
             const metadata = await fetchAlbumMetadata(line.trim());
-            
-            // Check for potential duplicates
             const isDuplicate = albums.some(a => a.spotifyId === metadata.spotifyId || a.title.toLowerCase() === metadata.title.toLowerCase());
+            
             if (isDuplicate) {
                  logs.push({ status: 'error', message: `Skipped Duplicate: ${metadata.title}` });
-                 continue;
+            } else {
+                await addAlbum({
+                    ...metadata,
+                    status: 'Collection',
+                    format: 'Digital',
+                    addedAt: Date.now()
+                });
+                logs.push({ status: 'success', message: `Imported: ${metadata.title}` });
             }
-            
-            await addAlbum({
-                ...metadata,
-                status: 'Collection',
-                format: 'Digital', // Default for import
-                addedAt: Date.now()
-            });
-            
-            logs.push({ status: 'success', message: `Imported: ${metadata.title}` });
         } catch (err) {
             logs.push({ status: 'error', message: `Failed: ${line.substring(0, 40)}... - ${err.message}` });
         }
-        // Update log progressively so user sees movement
-        setImportLog([...logs]);
+        if (count % 5 === 0) updateLogs();
     }
+    updateLogs();
     
     setIsImporting(false);
     if (logs.every(l => l.status === 'success')) {

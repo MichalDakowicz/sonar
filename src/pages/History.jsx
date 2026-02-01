@@ -1,11 +1,11 @@
 import React from 'react';
 import { useHistory } from '../hooks/useHistory';
-import { ArrowLeft, Clock, Music } from 'lucide-react';
+import { ArrowLeft, Clock, Music, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatRelativeTime } from '../lib/utils';
 
 export default function History() {
-  const { history, loading } = useHistory();
+  const { history, loading, removeHistoryItem } = useHistory();
 
   return (
     <div className="min-h-screen bg-neutral-950 text-white p-4 pb-20 sm:p-8">
@@ -38,7 +38,7 @@ export default function History() {
                 {history.map((entry) => (
                     <div 
                         key={entry.id} 
-                        className="flex items-center gap-4 p-4 rounded-lg bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 transition-colors"
+                        className="group flex items-center gap-4 p-4 rounded-lg bg-neutral-900/50 border border-neutral-800 hover:border-neutral-700 transition-colors"
                     >
                          <div className="h-12 w-12 shrink-0 rounded bg-neutral-800 overflow-hidden">
                             {entry.coverUrl ? (
@@ -55,9 +55,21 @@ export default function History() {
                                 {Array.isArray(entry.artist) ? entry.artist.join(", ") : entry.artist}
                              </p>
                          </div>
-                         <div className="text-right shrink-0">
-                             <div className="text-sm text-neutral-400">{formatRelativeTime(entry.timestamp)}</div>
-                             <div className="text-xs text-neutral-600">{new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                         <div className="flex items-center gap-4 shrink-0">
+                             <div className="text-right">
+                                 <div className="text-sm text-neutral-400">{formatRelativeTime(entry.timestamp)}</div>
+                                 <div className="text-xs text-neutral-600">{new Date(entry.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                             </div>
+                             <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeHistoryItem(entry.id);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-2 text-neutral-500 hover:text-red-500 hover:bg-neutral-800 rounded transition-all"
+                                title="Remove from history"
+                             >
+                                <Trash2 size={16} />
+                             </button>
                          </div>
                     </div>
                 ))}

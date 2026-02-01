@@ -5,6 +5,11 @@
         "albums": {
           ".read": true,
           ".write": "$uid === auth.uid"
+        },
+        "history": {
+          ".read": true,
+          ".write": "$uid === auth.uid",
+          ".indexOn": ["albumId", "timestamp"]
         }
       }
     }

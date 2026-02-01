@@ -1,6 +1,15 @@
-import { Star, Heart, Clock, StickyNote } from "lucide-react";
+import { Star, Heart, Clock, StickyNote, Play } from "lucide-react";
+import { useLogListen } from "../../hooks/useHistory";
+import { formatRelativeTime } from "../../lib/utils";
 
 export default function AlbumRow({ album, onClick, isHighlighted, innerRef }) {
+  const { logListen } = useLogListen();
+
+  const handleLogListen = (e) => {
+      e.stopPropagation();
+      logListen(album);
+  };
+
   const highlightedStyles = isHighlighted 
     ? "bg-neutral-800 border-l-4 border-l-emerald-500" 
     : "bg-neutral-900 border-l-4 border-l-transparent hover:bg-neutral-800 hover:border-l-neutral-700";
@@ -50,6 +59,13 @@ export default function AlbumRow({ album, onClick, isHighlighted, innerRef }) {
         <p className="truncate text-sm text-neutral-400">
             {Array.isArray(album.artist) ? album.artist.join(", ") : album.artist}
         </p>
+        
+        {album.lastListened && (
+            <div className="flex items-center gap-1 text-[10px] text-emerald-500 mt-0.5 font-medium">
+                <Clock size={10} />
+                <span>Spun {formatRelativeTime(album.lastListened)}</span>
+            </div>
+        )}
       </div>
       <div className="hidden sm:block text-sm text-neutral-500 w-24 text-right">
         {album.releaseDate}
@@ -60,7 +76,15 @@ export default function AlbumRow({ album, onClick, isHighlighted, innerRef }) {
         </span>
       </div>
       
-      <div className="w-8 flex justify-end" onClick={(e) => e.stopPropagation()}>
+      <div className="w-20 flex justify-end gap-2 items-center" onClick={(e) => e.stopPropagation()}>
+        <button
+            onClick={handleLogListen}
+            className="p-1.5 rounded-full text-neutral-500 hover:text-white hover:bg-neutral-800 transition-colors opacity-0 group-hover:opacity-100"
+            title="Log Listen"
+        >
+            <Play size={20} className="fill-current" />
+        </button>
+
         {album.url && (
             <a 
                 href={album.url} 

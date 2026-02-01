@@ -26,11 +26,11 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
     <div 
       ref={innerRef}
       onClick={onClick}
-      className={`group relative overflow-hidden rounded-xl bg-neutral-900 border border-neutral-800 transition-all duration-300 cursor-pointer ${highlightedStyles}`}
+      className={`group h-full flex flex-col relative overflow-hidden rounded-xl bg-neutral-900 border border-neutral-800 transition-all duration-300 cursor-pointer ${highlightedStyles}`}
     >
-      <div className="aspect-square w-full overflow-hidden bg-neutral-800 relative">
+      <div className="aspect-square w-full overflow-hidden bg-neutral-800 relative shrink-0">
         {album.coverUrl ? (
-          <img 
+          <img  
             src={album.coverUrl} 
             alt={album.title} 
             className={`h-full w-full object-cover transition-opacity ${album.status === 'Wishlist' ? 'opacity-60 grayscale-[0.8]' : ''}`}
@@ -68,7 +68,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
             {!readOnly && (
             <button
                 onClick={handleLogListen}
-                className="p-2 rounded-full bg-white text-black shadow-lg hover:bg-neutral-200 hover:scale-110 transition-all duration-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-white text-black shadow-lg hover:bg-neutral-200 hover:scale-110 transition-all duration-200 flex items-center justify-center"
                 title="Log Listen"
             >
                 <Play size={16} className="fill-black ml-0.5" />
@@ -82,7 +82,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
                     target="_blank" 
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="p-2 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-110 transition-all duration-200 flex items-center justify-center"
+                    className="w-8 h-8 rounded-full bg-[#1DB954] text-black shadow-lg hover:scale-110 transition-all duration-200 flex items-center justify-center"
                     title="Open in Spotify"
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -93,20 +93,22 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
         </div>
       </div>
       
-      <div className="p-4 relative">
+      <div className="p-4 relative flex flex-col flex-1">
         <h3 className="truncate font-bold text-white text-lg leading-tight" title={album.title}>{album.title}</h3>
         <p className="truncate text-sm text-neutral-400 font-medium" title={Array.isArray(album.artist) ? album.artist.join(", ") : album.artist}>
             {Array.isArray(album.artist) ? album.artist.join(", ") : album.artist}
         </p>
         
-        {album.lastListened && (
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
-                <Clock size={12} />
-                <span>Spun {formatRelativeTime(album.lastListened)}</span>
-            </div>
-        )}
+        <div className="mt-2 h-4 my-auto flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+            {album.lastListened && (
+                <>
+                    <Clock size={12} />
+                    <span>Spun {formatRelativeTime(album.lastListened)}</span>
+                </>
+            )}
+        </div>
 
-        <div className="mt-3 flex items-center justify-between text-xs text-neutral-500">
+        <div className="flex items-center justify-between text-xs text-neutral-500 mt-auto">
           <span>{album.releaseDate}</span>
           <span className={`uppercase tracking-wider rounded border px-2 py-0.5 max-w-[60%] truncate transition-colors ${isHighlighted ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10' : 'border-neutral-800 group-hover:border-neutral-700'}`}>
             {Array.isArray(album.format) ? album.format.join(" • ") : (album.format || 'Digital')}

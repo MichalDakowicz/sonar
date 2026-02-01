@@ -26,7 +26,7 @@ export function FilterPanel({
     filterArtist !== "All",
     filterGenre !== "All",
     filterYear !== "All",
-    filterStatus !== "Collection"
+    filterStatus !== "All"
     // sortBy is always active, doesn't count as a "filter" per se
   ].filter(Boolean).length;
 
@@ -34,12 +34,16 @@ export function FilterPanel({
     <Popover>
       <PopoverTrigger asChild>
         <button 
-          className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors hover:bg-neutral-800 ${activeFiltersCount > 0 ? 'border-emerald-500 text-emerald-500 bg-emerald-500/10' : 'border-neutral-800 text-neutral-400'}`}
+          className={`flex items-center gap-2 rounded px-2 py-1 text-sm font-medium transition-colors cursor-pointer ${
+            activeFiltersCount > 0 
+              ? 'bg-neutral-800 text-emerald-400' 
+              : 'text-neutral-500 hover:text-neutral-300'
+          }`}
         >
-          <SlidersHorizontal size={18} />
+          <SlidersHorizontal size={16} />
           <span className="hidden sm:inline">Filters</span>
           {activeFiltersCount > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-neutral-900">
+            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-neutral-900">
               {activeFiltersCount}
             </span>
           )}
@@ -65,6 +69,7 @@ export function FilterPanel({
                 <label className="text-xs font-medium text-neutral-500 uppercase">Sort Order</label>
                 <FilterCombobox
                     options={[
+                        { value: "custom", label: "Custom" },
                         { value: "addedAt", label: "Recently Added" },
                         { value: "rating", label: "Highest Rated" },
                         { value: "releaseDate", label: "Release Date" },

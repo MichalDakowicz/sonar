@@ -43,7 +43,7 @@ export function useAlbums() {
     const newAlbumRef = push(albumsRef);
     await set(newAlbumRef, {
       ...albumData,
-      addedAt: Date.now(),
+      addedAt: albumData.addedAt || Date.now(),
     });
   };
 
