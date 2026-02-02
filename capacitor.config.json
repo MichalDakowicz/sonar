@@ -1,5 +1,12 @@
 {
   "appId": "com.michaldakowicz.musictracker",
   "appName": "Music Tracker",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "973703340206-hjuoojaa0qvb0imn6scijauqnr0e3fv7.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": false
+    }
+  }
 }

@@ -25,6 +25,11 @@ This project has been configured with **Capacitor** to run as a native Android a
     *   Or, create an **Android Virtual Device (AVD)** in the Device Manager.
     *   Click the green **Play** button (Run 'app') in the top toolbar.
 
+3.  **Configure Google Login**:
+    *   To make Google Login work in the app, you must update `capacitor.config.json`.
+    *   Replace `"REPLACE_WITH_YOUR_WEB_CLIENT_ID..."` with your actual **Web Client ID** from the Google Cloud Console (APIs & Services > Credentials).
+    *   Ensure you have configured the **SHA-1** fingerprint of your debug keystore (`c:\Users\YOURUSER\.android\debug.keystore`) in the Firebase Console Project Settings.
+
 ## Customizing the App Icon & Splash Screen
 
 To change the default Capacitor icon:

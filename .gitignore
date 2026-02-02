@@ -30,3 +30,7 @@ feature_ideas.md
 .firebase
 .firebaserc
 .github/
+# Mobile Build Artifacts
+android/app/google-services.json
+android/app/src/main/assets/public
+android/app/src/main/assets/capacitor.config.json
