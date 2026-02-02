@@ -573,22 +573,6 @@ export default function Home() {
                         {/* Desktop View: Full Toolbar */}
                         <div className="hidden sm:flex items-center gap-4">
                             <button
-                                onClick={() => setIsStatsModalOpen(true)}
-                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
-                            >
-                                <BarChart3 size={16} />
-                                <span className="hidden sm:inline">Overview</span>
-                            </button>
-    
-                            <Link
-                                to="/history"
-                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
-                            >
-                                <Clock size={16} />
-                                <span className="hidden sm:inline">History</span>
-                            </Link>
-    
-                            <button
                                 onClick={handleRandomPick}
                                 className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
                             >
@@ -605,6 +589,22 @@ export default function Home() {
                                 <Plus size={16} />
                                 <span className="hidden sm:inline">Add Album</span>
                             </button>
+
+                            <button
+                                onClick={() => setIsStatsModalOpen(true)}
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="Overview"
+                            >
+                                <BarChart3 size={20} />
+                            </button>
+    
+                            <Link
+                                to="/history"
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="History"
+                            >
+                                <Clock size={20} />
+                            </Link>
     
                             <button
                                 onClick={() => setIsImportModalOpen(true)}
@@ -642,7 +642,7 @@ export default function Home() {
             >
                 {/* Toolbar */}
                 <div className="mb-4 flex flex-row items-center justify-between gap-3 sm:gap-4">
-                    <div className="relative flex-1 max-w-md min-w-0">
+                    <div className="relative flex-1 min-w-0">
                         <Search
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
                             size={18}
