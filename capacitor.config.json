@@ -1,6 +1,6 @@
 {
   "appId": "com.michaldakowicz.musictracker",
-  "appName": "Music Tracker",
+  "appName": "Sonar",
   "webDir": "dist",
   "plugins": {
     "GoogleAuth": {

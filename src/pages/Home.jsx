@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import Logo from "../components/ui/Logo";
 import { useAuth } from "../features/auth/AuthContext";
 import { useAlbums } from "../hooks/useAlbums";
 import { useToast } from "../components/ui/Toast";
@@ -325,20 +326,42 @@ export default function Home() {
 
     // Derived state for grouped albums
     const groupedAlbums = useMemo(() => {
-        if (groupBy !== "artist") return null;
+        if (groupBy === "none") return null;
 
         const groups = {};
+        
         filteredAlbums.forEach((album) => {
-            const primaryArtist = Array.isArray(album.artist)
-                ? album.artist[0]
-                : album.artist;
-            const key = primaryArtist || "Unknown Artist";
+            let key = "Other";
+
+            if (groupBy === "artist") {
+                const primary = Array.isArray(album.artist) 
+                    ? album.artist[0] 
+                    : album.artist;
+                key = primary || "Unknown Artist";
+            } else if (groupBy === "year") {
+                key = album.releaseDate 
+                    ? album.releaseDate.substring(0, 4) 
+                    : "Unknown Year";
+            } else if (groupBy === "genre") {
+                 key = (album.genres && album.genres.length > 0) ? album.genres[0] : "No Genre";
+            } else if (groupBy === "format") {
+                 key = (Array.isArray(album.format) ? album.format[0] : album.format) || "Digital";
+            } else if (groupBy === "status") {
+                 key = album.status || "Collection";
+            }
+
             if (!groups[key]) groups[key] = [];
             groups[key].push(album);
         });
 
-        // Sort groups by key
-        const sortedKeys = Object.keys(groups).sort();
+        // Sort keys
+        let sortedKeys = Object.keys(groups).sort();
+        
+        // Reverse sort for years (newest first)
+        if (groupBy === "year") {
+            sortedKeys = sortedKeys.reverse();
+        }
+
         return sortedKeys.map((key) => ({
             title: key,
             albums: groups[key],
@@ -462,12 +485,10 @@ export default function Home() {
             >
                 <div className="mx-auto max-w-screen-2xl flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-2xl font-bold tracking-tight text-white hidden sm:block">
-                            Music Tracker
-                        </h1>
-                        <span className="text-xl font-bold tracking-tight text-white sm:hidden">
-                            MT
-                        </span>
+                            <Logo className="h-8 w-8 text-emerald-500" />
+                            <h1 className="text-2xl font-bold tracking-tight text-white">
+                                Sonar
+                            </h1>
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4">
@@ -616,11 +637,11 @@ export default function Home() {
             </header>
 
             <main
-                className="mx-auto max-w-screen-2xl p-4 sm:p-6"
+                className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Toolbar */}
-                <div className="mb-8 flex flex-row items-center justify-between gap-3 sm:gap-4">
+                <div className="mb-4 flex flex-row items-center justify-between gap-3 sm:gap-4">
                     <div className="relative flex-1 max-w-md min-w-0">
                         <Search
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
@@ -636,40 +657,6 @@ export default function Home() {
                     </div>
 
                     <div className="flex items-center gap-2 shrink-0">
-                        <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
-                            <button
-                                onClick={() => setViewMode("grid")}
-                                className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
-                                title="Grid View"
-                            >
-                                <LayoutGrid size={18} />
-                            </button>
-                            <button
-                                onClick={() => setViewMode("list")}
-                                className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "list" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
-                                title="List View"
-                            >
-                                <ListIcon size={18} />
-                            </button>
-                        </div>
-
-                        <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
-                            <button
-                                onClick={() =>
-                                    setGroupBy(
-                                        groupBy === "artist"
-                                            ? "none"
-                                            : "artist",
-                                    )
-                                }
-                                className={`flex items-center gap-2 rounded px-2 py-1 text-sm font-medium transition-colors cursor-pointer ${groupBy === "artist" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
-                                title="Group by Artist"
-                            >
-                                <Layers size={16} />
-                                <span className="hidden sm:inline">Group</span>
-                            </button>
-                        </div>
-
                         <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
                             <FilterPanel
                                 filterFormat={filterFormat}
@@ -689,6 +676,52 @@ export default function Home() {
                                 uniqueYears={uniqueYears}
                                 onClearAll={handleClearFilters}
                             />
+                        </div>
+
+                        <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
+                             <Popover>
+                                <PopoverTrigger asChild>
+                                    <button className={`flex items-center gap-2 rounded px-2 py-1 text-sm font-medium transition-colors cursor-pointer ${
+                                        groupBy !== "none" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"
+                                    }`}>
+                                        <Layers size={16} />
+                                        <span className="hidden sm:inline">Group</span>
+                                    </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-48 p-2 bg-neutral-900 border-neutral-800" align="end">
+                                    <div className="grid gap-1">
+                                        <h4 className="font-medium text-xs text-neutral-500 mb-2 px-2 uppercase">Group By</h4>
+                                        {["none", "artist", "year", "genre", "format", "status"].map(opt => (
+                                            <button
+                                                key={opt}
+                                                onClick={() => setGroupBy(opt)}
+                                                className={`w-full text-left px-2 py-1.5 rounded text-sm transition-colors ${
+                                                    groupBy === opt ? "bg-emerald-500/10 text-emerald-500" : "text-neutral-300 hover:bg-neutral-800"
+                                                }`}
+                                            >
+                                                {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
+
+                        <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
+                            <button
+                                onClick={() => setViewMode("grid")}
+                                className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "grid" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                                title="Grid View"
+                            >
+                                <LayoutGrid size={18} />
+                            </button>
+                            <button
+                                onClick={() => setViewMode("list")}
+                                className={`rounded p-1.5 transition-colors cursor-pointer ${viewMode === "list" ? "bg-neutral-800 text-white" : "text-neutral-500 hover:text-neutral-300"}`}
+                                title="List View"
+                            >
+                                <ListIcon size={18} />
+                            </button>
                         </div>
                     </div>
                 </div>

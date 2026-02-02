@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
-  SlidersHorizontal, X, SortAsc, Library, Disc, Mic2, Tags, Calendar 
+  SlidersHorizontal, X, SortAsc, Library, Mic2, Tags, Calendar 
 } from 'lucide-react';
+import Logo from './ui/Logo';
 import { 
   Popover, 
   PopoverContent, 
@@ -107,7 +108,7 @@ export function FilterPanel({
                         value={filterFormat}
                         onChange={setFilterFormat}
                         placeholder="Format"
-                        icon={Disc}
+                        icon={Logo}
                         className="w-full"
                     />
                  </div>

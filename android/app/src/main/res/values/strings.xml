@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Music Tracker</string>
-    <string name="title_activity_main">Music Tracker</string>
+    <string name="app_name">Sonar</string>
+    <string name="title_activity_main">Sonar</string>
     <string name="package_name">com.michaldakowicz.musictracker</string>
     <string name="custom_url_scheme">com.michaldakowicz.musictracker</string>
     <string name="server_client_id">973703340206-hjuoojaa0qvb0imn6scijauqnr0e3fv7.apps.googleusercontent.com</string>

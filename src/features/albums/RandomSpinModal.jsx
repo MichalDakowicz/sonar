@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Play, Disc } from "lucide-react";
+import { X, Play } from "lucide-react";
+import Logo from "../../components/ui/Logo";
 import { useLogListen } from "../../hooks/useHistory";
 
 export default function RandomSpinModal({ isOpen, onClose, albums, onSelect }) {
@@ -76,7 +77,7 @@ export default function RandomSpinModal({ isOpen, onClose, albums, onSelect }) {
 
         <div className="p-8 flex flex-col items-center justify-center text-center">
             <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                <Disc className={`text-emerald-500 ${isSpinning ? 'animate-spin' : ''}`} />
+                <Logo className={`text-emerald-500 ${isSpinning ? 'animate-spin' : ''}`} />
                 {isSpinning ? "Digging in the crates..." : "Your Spin for the Night"}
             </h2>
 
@@ -92,7 +93,7 @@ export default function RandomSpinModal({ isOpen, onClose, albums, onSelect }) {
                             />
                          ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                                <Disc size={64} className="text-neutral-700" />
+                                <Logo size={64} className="text-neutral-700" />
                             </div>
                          )}
                          

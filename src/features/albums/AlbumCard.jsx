@@ -1,4 +1,5 @@
-import { Disc, Star, Heart, Clock, StickyNote, Play } from "lucide-react";
+import { Star, Heart, Clock, StickyNote, Play } from "lucide-react";
+import Logo from "../../components/ui/Logo";
 import { useLogListen } from "../../hooks/useHistory";
 import { formatRelativeTime } from "../../lib/utils";
 
@@ -38,7 +39,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-neutral-700">
-            <Disc size={48} />
+            <Logo size={48} />
           </div>
         )}
         

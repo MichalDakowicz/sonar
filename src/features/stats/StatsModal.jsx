@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { X, BarChart3, PieChart, Calendar, Star, Disc, Trophy } from "lucide-react";
+import { X, BarChart3, PieChart, Calendar, Star, Trophy } from "lucide-react";
+import Logo from "../../components/ui/Logo";
 
 export default function StatsModal({ isOpen, onClose, albums }) {
   const stats = useMemo(() => {
@@ -94,7 +95,7 @@ export default function StatsModal({ isOpen, onClose, albums }) {
             
             {/* Top Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <StatCard label="Total Albums" value={stats.totalAlbums} icon={<Disc size={20} />} />
+                <StatCard label="Total Albums" value={stats.totalAlbums} icon={<Logo size={20} />} />
                 <StatCard label="Unique Artists" value={stats.uniqueArtistCount} icon={<Trophy size={20} />} /> 
                  <StatCard label="Most Popular Format" value={stats.sortedFormats[0]?.name || "N/A"} subtext={stats.sortedFormats[0] && `${stats.sortedFormats[0].count} albums`} icon={<PieChart size={20} />} />
                  <StatCard label="Top Decade" value={stats.sortedDecades.sort((a,b) => b.count - a.count)[0]?.decade || "N/A"} icon={<Calendar size={20} />} />
@@ -105,7 +106,7 @@ export default function StatsModal({ isOpen, onClose, albums }) {
                 {/* Format Breakdown */}
                 <div className="bg-neutral-950/50 rounded-xl p-5 border border-neutral-800">
                     <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <Disc size={18} className="text-blue-500" /> Format Breakdown
+                        <Logo size={18} className="text-blue-500" /> Format Breakdown
                     </h3>
                     <div className="space-y-3">
                         {stats.sortedFormats.map((item) => (

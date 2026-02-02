@@ -1,5 +1,5 @@
 import { useAuth } from "../features/auth/AuthContext";
-import { Disc } from "lucide-react";
+import Logo from "../components/ui/Logo";
 import { Navigate } from "react-router-dom";
 
 export default function Login() {
@@ -10,8 +10,8 @@ export default function Login() {
   return (
     <div className="flex h-screen w-full flex-col items-center justify-center bg-neutral-950 text-neutral-200">
       <div className="mb-8 flex flex-col items-center gap-4">
-        <Disc size={64} className="text-emerald-500 animate-spin" />
-        <h1 className="text-4xl font-bold tracking-tight">Music Tracker</h1>
+        <Logo className="h-20 w-20 text-emerald-500" />
+        <h1 className="text-4xl font-bold tracking-tight">Sonar</h1>
         <p className="text-neutral-500">Curate your physical & digital collection.</p>
       </div>
       
