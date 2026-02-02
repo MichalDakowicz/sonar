@@ -65,7 +65,7 @@ export default function History() {
                                     e.stopPropagation();
                                     removeHistoryItem(entry.id);
                                 }}
-                                className="opacity-0 group-hover:opacity-100 p-2 text-neutral-500 hover:text-red-500 hover:bg-neutral-800 rounded transition-all"
+                                className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 p-2 text-neutral-500 hover:text-red-500 hover:bg-neutral-800 rounded transition-all"
                                 title="Remove from history"
                              >
                                 <Trash2 size={16} />

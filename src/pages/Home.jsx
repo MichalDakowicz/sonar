@@ -2,6 +2,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import { useAuth } from "../features/auth/AuthContext";
 import { useAlbums } from "../hooks/useAlbums";
 import { useToast } from "../components/ui/Toast";
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Link } from "react-router-dom";
 import AlbumCard from "../features/albums/AlbumCard";
 import AlbumRow from "../features/albums/AlbumRow";
@@ -23,6 +24,7 @@ import {
     Clock,
     Database,
     Share2,
+    Menu,
 } from "lucide-react";
 import {
     DndContext,
@@ -120,6 +122,7 @@ export default function Home() {
     const [isStatsModalOpen, setIsStatsModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [isSpinModalOpen, setIsSpinModalOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [editingAlbum, setEditingAlbum] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -454,7 +457,7 @@ export default function Home() {
         >
             {/* Header */}
             <header
-                className="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md px-6 py-4"
+                className="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="mx-auto max-w-screen-2xl flex items-center justify-between">
@@ -467,77 +470,158 @@ export default function Home() {
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setIsStatsModalOpen(true)}
-                            className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
-                        >
-                            <BarChart3 size={16} />
-                            <span className="hidden sm:inline">Overview</span>
-                        </button>
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        {/* Mobile View: Add Album & Menu */}
+                        <div className="flex sm:hidden items-center gap-2">
+                             <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="flex items-center gap-2 rounded-full bg-white p-2 text-sm font-bold text-black hover:bg-neutral-200 transition-colors cursor-pointer"
+                            >
+                                <Plus size={20} />
+                            </button>
+            
+                            <Popover open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
+                                <PopoverTrigger asChild>
+                                     <button className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer">
+                                        <Menu size={20} />
+                                     </button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-56 bg-neutral-950 border-neutral-800 p-2" align="end">
+                                    <div className="flex flex-col gap-1">
+                                         <button
+                                            onClick={() => {
+                                                setIsStatsModalOpen(true);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-emerald-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <BarChart3 size={16} />
+                                            <span>Overview</span>
+                                        </button>
+                                         <Link
+                                            to="/history"
+                                            onClick={() => setIsMobileMenuOpen(false)}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-emerald-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <Clock size={16} />
+                                            <span>History</span>
+                                        </Link>
+                                         <button
+                                            onClick={() => {
+                                                handleRandomPick();
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-emerald-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <Shuffle size={16} />
+                                            <span>Pick Random</span>
+                                        </button>
+                                         <button
+                                            onClick={() => {
+                                                setIsImportModalOpen(true);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-emerald-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <Database size={16} />
+                                            <span>Import/Export</span>
+                                        </button>
+                                         <button
+                                            onClick={handleShareShelf}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-emerald-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <Share2 size={16} />
+                                            <span>Share</span>
+                                        </button>
+                                         <div className="h-px bg-neutral-800 my-1" />
+                                        <button
+                                            onClick={() => {
+                                                logout();
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-neutral-800 text-neutral-300 hover:text-red-400 transition-colors cursor-pointer w-full text-left"
+                                        >
+                                            <LogOut size={16} />
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
+                        </div>
 
-                        <Link
-                            to="/history"
-                            className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
-                        >
-                            <Clock size={16} />
-                            <span className="hidden sm:inline">History</span>
-                        </Link>
-
-                        <button
-                            onClick={handleRandomPick}
-                            className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
-                        >
-                            <Shuffle size={16} />
-                            <span className="hidden sm:inline">
-                                Pick Random
-                            </span>
-                        </button>
-
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 transition-colors cursor-pointer"
-                        >
-                            <Plus size={16} />
-                            <span className="hidden sm:inline">Add Album</span>
-                        </button>
-
-                        <button
-                            onClick={() => setIsImportModalOpen(true)}
-                            className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
-                            title="Import/Export Data"
-                        >
-                            <Database size={20} />
-                        </button>
-
-                        <button
-                            onClick={handleShareShelf}
-                            className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
-                            title="Share Public Link"
-                        >
-                            <Share2 size={20} />
-                        </button>
-
-                        <div className="h-6 w-px bg-neutral-800" />
-
-                        <button
-                            onClick={logout}
-                            className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
-                            title="Logout"
-                        >
-                            <LogOut size={20} />
-                        </button>
+                        {/* Desktop View: Full Toolbar */}
+                        <div className="hidden sm:flex items-center gap-4">
+                            <button
+                                onClick={() => setIsStatsModalOpen(true)}
+                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
+                            >
+                                <BarChart3 size={16} />
+                                <span className="hidden sm:inline">Overview</span>
+                            </button>
+    
+                            <Link
+                                to="/history"
+                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
+                            >
+                                <Clock size={16} />
+                                <span className="hidden sm:inline">History</span>
+                            </Link>
+    
+                            <button
+                                onClick={handleRandomPick}
+                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors cursor-pointer"
+                            >
+                                <Shuffle size={16} />
+                                <span className="hidden sm:inline">
+                                    Pick Random
+                                </span>
+                            </button>
+    
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 transition-colors cursor-pointer"
+                            >
+                                <Plus size={16} />
+                                <span className="hidden sm:inline">Add Album</span>
+                            </button>
+    
+                            <button
+                                onClick={() => setIsImportModalOpen(true)}
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="Import/Export Data"
+                            >
+                                <Database size={20} />
+                            </button>
+    
+                            <button
+                                onClick={handleShareShelf}
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="Share Public Link"
+                            >
+                                <Share2 size={20} />
+                            </button>
+    
+                            <div className="h-6 w-px bg-neutral-800" />
+    
+                            <button
+                                onClick={logout}
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="Logout"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
 
             <main
-                className="mx-auto max-w-screen-2xl p-6"
+                className="mx-auto max-w-screen-2xl p-4 sm:p-6"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Toolbar */}
-                <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="relative max-w-md w-full">
+                <div className="mb-8 flex flex-row items-center justify-between gap-3 sm:gap-4">
+                    <div className="relative flex-1 max-w-md min-w-0">
                         <Search
                             className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"
                             size={18}
@@ -551,7 +635,7 @@ export default function Home() {
                         />
                     </div>
 
-                    <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                    <div className="flex items-center gap-2 shrink-0">
                         <div className="flex h-10 items-center rounded-lg border border-neutral-800 bg-neutral-900 p-1 shrink-0">
                             <button
                                 onClick={() => setViewMode("grid")}

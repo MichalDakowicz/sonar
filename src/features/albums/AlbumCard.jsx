@@ -63,7 +63,7 @@ export default function AlbumCard({ album, onClick, isHighlighted, innerRef, rea
         </div>
 
         {/* Spotify Deep Link & Play Button */}
-        <div className="absolute bottom-2 right-2 flex gap-2 translate-y-2 opacity-0 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-20">
+        <div className="absolute bottom-2 right-2 flex gap-2 translate-y-0 opacity-100 sm:translate-y-2 sm:opacity-0 sm:group-hover:opacity-100 sm:group-hover:translate-y-0 transition-all duration-300 z-20">
              {/* Log Listen Button */}
             {!readOnly && (
             <button
