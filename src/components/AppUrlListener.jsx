@@ -2,11 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
 
+let isLaunchUrlHandled = false;
+
 const AppUrlListener = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('AppUrlListener mounted');
     const handleUrlOpen = (data) => {
       console.log('App URL opened:', data.url);
       try {
@@ -22,18 +23,36 @@ const AppUrlListener = () => {
       }
     };
 
-    CapacitorApp.addListener('appUrlOpen', handleUrlOpen);
+    const setupListener = async () => {
+       const listener = await CapacitorApp.addListener('appUrlOpen', handleUrlOpen);
+       return listener;
+    };
+
+    const listenerPromise = setupListener();
 
     // Check if app was launched with a URL
-    CapacitorApp.getLaunchUrl().then((launchUrl) => {
-      if (launchUrl && launchUrl.url) {
-        handleUrlOpen(launchUrl);
-      }
-    });
+    // Only check if we haven't handled it yet in this session
+    if (!isLaunchUrlHandled) {
+        CapacitorApp.getLaunchUrl().then((launchUrl) => {
+            if (launchUrl && launchUrl.url) {
+                // Verify it is a relevant URL before claiming we handled it/navigating
+                 try {
+                     const url = new URL(launchUrl.url);
+                     if (url.pathname.startsWith('/u/')) {
+                         console.log("Handling launch URL:", launchUrl.url);
+                         handleUrlOpen(launchUrl);
+                     }
+                 } catch (e) {
+                     // ignore invalid urls
+                 }
+            }
+            isLaunchUrlHandled = true;
+        });
+    }
 
-    // Clean up listener? Capacitor listeners are usually global but for a component it's good practice
-    // although removing it might be tricky if the function reference changes. 
-    // For this singleton component, it's fine.
+    return () => {
+        listenerPromise.then(item => item.remove());
+    };
   }, [navigate]);
 
   return null;

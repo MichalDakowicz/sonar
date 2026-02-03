@@ -11,13 +11,22 @@ import {
     Tags,
     Store,
     TrendingUp,
+    ArrowLeft,
+    LayoutGrid,
+    LogOut,
+    Home as HomeIcon,
+    LogIn
 } from "lucide-react";
 import { useAlbums } from "../hooks/useAlbums";
 import { usePublicAlbums } from "../hooks/usePublicAlbums";
 import { Navbar } from "../components/layout/Navbar";
+import Logo from "../components/ui/Logo";
+import { useAuth } from "../features/auth/AuthContext";
 
 export default function Stats() {
     const { userId } = useParams();
+    const { user, login, logout } = useAuth();
+
 
     const { albums: userAlbums, loading: userLoading } = useAlbums();
     const { albums: publicAlbums, loading: publicLoading } =
@@ -25,6 +34,9 @@ export default function Stats() {
 
     const albums = userId ? publicAlbums : userAlbums;
     const loading = userId ? publicLoading : userLoading;
+
+    // ... existing code ...
+
 
     const stats = useMemo(() => {
         if (!albums || albums.length === 0) return null;
@@ -161,41 +173,117 @@ export default function Stats() {
         };
     }, [albums]);
 
+    const PublicHeader = () => (
+        <header className="sticky top-0 z-40 border-b border-neutral-800 bg-neutral-950/80 backdrop-blur-md px-4 py-3 sm:px-6 sm:py-4">
+            <div className="mx-auto max-w-screen-2xl flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <Logo className="h-8 w-8 text-emerald-500" />
+                    <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white">
+                        Sonar
+                    </h1>
+                    <div className="h-6 w-px bg-neutral-800 mx-2" />
+                    <div className="flex items-center gap-2 text-emerald-500">
+                        <span className="font-medium">Public Shelf</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="hidden min-[780px]:flex items-center gap-1 mr-2">
+                            <Link
+                                to={`/u/${userId}`}
+                                className="p-2 rounded-md transition-colors text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                title="Library"
+                            >
+                                <LayoutGrid size={20} />
+                            </Link>
+                            <div className="p-2 rounded-md text-white bg-neutral-800 cursor-default" title="Stats">
+                                <BarChart3 size={20} />
+                            </div>
+                            <div className="h-6 w-px bg-neutral-800 mx-2" />
+                    </div>
+                    {user ? (
+                        <>
+                            <Link
+                                to="/"
+                                className="flex items-center gap-2 rounded-full border border-neutral-700 px-3 py-2 sm:px-4 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors"
+                            >
+                                <HomeIcon size={16} />
+                                <span className="hidden sm:inline">
+                                    My Collection
+                                </span>
+                            </Link>
+
+                            <button
+                                onClick={logout}
+                                className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
+                                title="Logout"
+                            >
+                                <LogOut size={20} />
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                            onClick={login}
+                            className="flex items-center gap-2 rounded-full bg-white px-3 py-2 sm:px-4 text-sm font-bold text-black hover:bg-neutral-200 transition-colors"
+                        >
+                            <LogIn size={16} />
+                            <span className="hidden sm:inline">Login</span>
+                        </button>
+                    )}
+                </div>
+            </div>
+        </header>
+    );
+
+    const PublicBottomNav = () => (
+         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-lg min-[780px]:hidden pb-safe">
+            <div className="flex items-center justify-around p-2">
+                <Link
+                    to={`/u/${userId}`}
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-neutral-400 hover:text-emerald-500"
+                >
+                    <LayoutGrid size={24} />
+                    <span className="text-[10px] font-medium">Library</span>
+                </Link>
+                <button
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-emerald-500"
+                >
+                    <BarChart3 size={24} />
+                    <span className="text-[10px] font-medium">Stats</span>
+                </button>
+            </div>
+        </nav>
+    );
+
     if (loading)
         return (
             <div className="min-h-screen bg-neutral-950 text-white">
-                <Navbar />
+                {userId ? <PublicHeader /> : <Navbar />}
                 <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-20 flex items-center justify-center">
                     <p>Loading stats...</p>
                 </main>
+                {userId && <PublicBottomNav />}
             </div>
         );
     
     if (!stats)
         return (
             <div className="min-h-screen bg-neutral-950 text-white">
-                 <Navbar />
+                 {userId ? <PublicHeader /> : <Navbar />}
                  <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-20 flex flex-col items-center justify-center gap-4">
                     <p>No data available. Add some albums to your collection!</p>
-                    <Link to="/" className="text-emerald-500 hover:underline">
-                        Go to Library
+                    <Link to={userId ? `/u/${userId}` : "/"} className="text-emerald-500 hover:underline">
+                        {userId ? "Go to Shelf" : "Go to Library"}
                     </Link>
                 </main>
+                {userId && <PublicBottomNav />}
             </div>
         );
 
     return (
         <div className="min-h-screen bg-neutral-950 text-white">
-            <Navbar />
-            <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-20 space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
-
-                    {/* Header */}
-                    <div className="flex items-center justify-between border-b border-neutral-800 pb-6">
-                        <h1 className="text-3xl font-bold flex items-center gap-3 text-white">
-                            <BarChart3 className="text-emerald-500" size={32} />
-                            Statistics
-                        </h1>
-                    </div>
+            {userId ? <PublicHeader /> : <Navbar />}
+            <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-24 space-y-8 animate-in fade-in duration-500 slide-in-from-bottom-4">
 
                     {/* Top Stats Cards */}
                     <div className="flex flex-wrap gap-4">
@@ -525,6 +613,7 @@ export default function Stats() {
                         </div>
                     )}
             </main>
+            {userId && <PublicBottomNav />}
         </div>
     );
 }

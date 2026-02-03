@@ -273,25 +273,30 @@ export default function SharedShelf() {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2 sm:gap-4">
+                        <div className="hidden min-[780px]:flex items-center gap-1 mr-2">
+                             <div className="p-2 rounded-md text-white bg-neutral-800 cursor-default" title="Library">
+                                 <LayoutGrid size={20} />
+                             </div>
+                             <Link
+                                 to={`/u/${userId}/stats`}
+                                 className="p-2 rounded-md transition-colors text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                 title="Stats"
+                             >
+                                 <BarChart3 size={20} />
+                             </Link>
+                             <div className="h-6 w-px bg-neutral-800 mx-2" />
+                        </div>
                         {user ? (
                             <>
                                 <Link
                                     to="/"
-                                    className="flex items-center gap-2 rounded-full border border-neutral-700 px-4 py-2 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors"
+                                    className="flex items-center gap-2 rounded-full border border-neutral-700 px-3 py-2 sm:px-4 text-sm font-medium hover:bg-neutral-800 hover:text-emerald-400 transition-colors"
                                 >
                                     <HomeIcon size={16} />
                                     <span className="hidden sm:inline">
                                         My Collection
                                     </span>
-                                </Link>
-
-                                <Link
-                                    to={`/u/${userId}/stats`}
-                                    className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
-                                    title="Overview"
-                                >
-                                    <BarChart3 size={20} />
                                 </Link>
 
                                 <button
@@ -303,34 +308,19 @@ export default function SharedShelf() {
                                 </button>
                             </>
                         ) : (
-                          <>
-
-                          <Link
-                                    to={`/u/${userId}/stats`}
-                                    className="rounded p-2 text-neutral-400 hover:bg-neutral-800 hover:text-white transition-colors cursor-pointer"
-                                    title="Overview"
-                                >
-                                    <BarChart3 size={20} />
-                          </Link>
-
                             <button
                                 onClick={login}
-                                className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-bold text-black hover:bg-neutral-200 transition-colors"
+                                className="flex items-center gap-2 rounded-full bg-white px-3 py-2 sm:px-4 text-sm font-bold text-black hover:bg-neutral-200 transition-colors"
                             >
-                                <img
-                                    src="https://www.google.com/favicon.ico"
-                                    alt="Google"
-                                    className="h-4 w-4"
-                                />
-                                <span>Login with Google</span>
+                                <LogIn size={16} />
+                                <span className="hidden sm:inline">Login</span>
                             </button>
-                            </>
                         )}
                     </div>
                 </div>
             </header>
 
-            <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6">
+            <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-24">
                 {/* Toolbar */}
                 <div className="mb-4 flex flex-row items-center justify-between gap-3 sm:gap-4">
                     <div className="relative flex-1 min-w-0">
@@ -532,6 +522,24 @@ export default function SharedShelf() {
                     </>
                 )}
             </main>
+
+            <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-neutral-800 bg-neutral-950/90 backdrop-blur-lg min-[780px]:hidden pb-safe">
+                <div className="flex items-center justify-around p-2">
+                    <button
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-emerald-500"
+                    >
+                        <LayoutGrid size={24} />
+                        <span className="text-[10px] font-medium">Library</span>
+                    </button>
+                    <Link
+                        to={`/u/${userId}/stats`}
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-neutral-400 hover:text-emerald-500"
+                    >
+                        <BarChart3 size={24} />
+                        <span className="text-[10px] font-medium">Stats</span>
+                    </Link>
+                </div>
+            </nav>
         </div>
     );
 }
