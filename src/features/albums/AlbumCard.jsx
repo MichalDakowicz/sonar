@@ -1,7 +1,6 @@
 import { Heart, Clock, StickyNote, Play } from "lucide-react";
 import Logo from "../../components/ui/Logo";
 import { useLogListen } from "../../hooks/useHistory";
-import { formatRelativeTime } from "../../lib/utils";
 
 export default function AlbumCard({
     album,

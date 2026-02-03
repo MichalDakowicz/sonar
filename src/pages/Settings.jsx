@@ -16,7 +16,7 @@ export default function Settings() {
 
     const handleShareShelf = () => {
         if (!user) return;
-        const url = `${window.location.origin}/u/${user.uid}`;
+        const url = `https://music-tracker-89fe5.web.app/u/${user.uid}`;
         navigator.clipboard.writeText(url);
         toast({
             title: "Link Copied!",
@@ -33,9 +33,7 @@ export default function Settings() {
 
 
                 <div className="flex items-center gap-3 mb-8">
-                    <div className="p-3 bg-neutral-900 rounded-full">
-                        <SettingsIcon className="w-6 h-6 text-emerald-500" />
-                    </div>
+                        <SettingsIcon className="text-emerald-500" size={32} />
                     <h1 className="text-3xl font-bold">Settings</h1>
                 </div>
 

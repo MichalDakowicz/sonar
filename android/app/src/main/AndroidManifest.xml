@@ -30,6 +30,15 @@
                     android:pathPrefix="/__/auth/handler"
                 />
             </intent-filter>
+
+            <!-- Intent Filter for App Links / Deep Links -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="music-tracker-89fe5.web.app" android:pathPrefix="/u/" />
+                <data android:scheme="https" android:host="music-tracker-89fe5.firebaseapp.com" android:pathPrefix="/u/" />
+            </intent-filter>
         </activity>
 
         <provider

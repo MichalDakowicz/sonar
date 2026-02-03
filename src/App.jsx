@@ -8,6 +8,7 @@ import History from "./pages/History";
 import SharedShelf from "./pages/SharedShelf";
 import Stats from "./pages/Stats";
 import Settings from "./pages/Settings";
+import AppUrlListener from "./components/AppUrlListener";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
@@ -18,6 +19,7 @@ function App() {
       <AuthProvider>
         <ToastProvider>
         <BrowserRouter>
+          <AppUrlListener />
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/u/:userId" element={<SharedShelf />} />

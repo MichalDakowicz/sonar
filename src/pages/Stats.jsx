@@ -1,11 +1,10 @@
 import { useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
     BarChart3,
     PieChart,
     Calendar,
     Trophy,
-    ArrowLeft,
     Library,
     Disc,
     DollarSign,
@@ -18,7 +17,6 @@ import { usePublicAlbums } from "../hooks/usePublicAlbums";
 import { Navbar } from "../components/layout/Navbar";
 
 export default function Stats() {
-    const navigate = useNavigate();
     const { userId } = useParams();
 
     const { albums: userAlbums, loading: userLoading } = useAlbums();
@@ -27,14 +25,6 @@ export default function Stats() {
 
     const albums = userId ? publicAlbums : userAlbums;
     const loading = userId ? publicLoading : userLoading;
-
-    const handleBack = () => {
-        if (userId) {
-            navigate(`/u/${userId}`);
-        } else {
-            navigate("/");
-        }
-    };
 
     const stats = useMemo(() => {
         if (!albums || albums.length === 0) return null;
@@ -173,20 +163,24 @@ export default function Stats() {
 
     if (loading)
         return (
-            <div className="min-h-screen bg-neutral-950 flex items-center justify-center text-white">
-                Loading stats...
+            <div className="min-h-screen bg-neutral-950 text-white">
+                <Navbar />
+                <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-20 flex items-center justify-center">
+                    <p>Loading stats...</p>
+                </main>
             </div>
         );
+    
     if (!stats)
         return (
-            <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-white gap-4">
-                <p>No data available. Add some albums to your collection!</p>
-                <button
-                    onClick={handleBack}
-                    className="text-blue-500 hover:underline"
-                >
-                    Go Back
-                </button>
+            <div className="min-h-screen bg-neutral-950 text-white">
+                 <Navbar />
+                 <main className="mx-auto max-w-screen-2xl px-4 sm:px-6 pt-6 pb-20 flex flex-col items-center justify-center gap-4">
+                    <p>No data available. Add some albums to your collection!</p>
+                    <Link to="/" className="text-emerald-500 hover:underline">
+                        Go to Library
+                    </Link>
+                </main>
             </div>
         );
 
@@ -201,12 +195,6 @@ export default function Stats() {
                             <BarChart3 className="text-emerald-500" size={32} />
                             Statistics
                         </h1>
-                        <button
-                            onClick={handleBack}
-                            className="p-2 -mr-2 hover:bg-neutral-900 rounded-full transition-colors"
-                        >
-                            <ArrowLeft size={24} className="text-neutral-400" />
-                        </button>
                     </div>
 
                     {/* Top Stats Cards */}

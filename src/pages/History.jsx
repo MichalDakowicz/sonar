@@ -1,6 +1,6 @@
 import React from 'react';
 import { useHistory } from '../hooks/useHistory';
-import { ArrowLeft, Clock, Music, Trash2 } from 'lucide-react';
+import { Clock, Music, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatRelativeTime } from '../lib/utils';
 import { Navbar } from '../components/layout/Navbar';
@@ -16,15 +16,9 @@ export default function History() {
         {/* Header */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Clock className="text-emerald-500" size={28} />
+            <Clock className="text-emerald-500" size={32} />
             <h1 className="text-3xl font-bold">Listening History</h1>
           </div>
-          <Link 
-            to="/" 
-            className="p-2 rounded-full hover:bg-neutral-900 text-neutral-400 hover:text-white transition-colors"
-          >
-            <ArrowLeft size={24} />
-          </Link>
         </div>
 
         {/* Content */}
