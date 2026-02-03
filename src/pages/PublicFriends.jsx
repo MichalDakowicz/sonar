@@ -210,18 +210,18 @@ export default function PublicFriends() {
                         to={`/u/${userId}`}
                         className="flex flex-col items-center gap-1 p-2 text-neutral-500"
                     >
-                        <LayoutGrid size={20} />
+                        <LayoutGrid size={24} />
                         <span className="text-[10px] font-medium">Library</span>
                     </Link>
                     <Link
                         to={`/u/${userId}/stats`}
                         className="flex flex-col items-center gap-1 p-2 text-neutral-500"
                     >
-                        <BarChart3 size={20} />
+                        <BarChart3 size={24} />
                         <span className="text-[10px] font-medium">Stats</span>
                     </Link>
                      <div className="flex flex-col items-center gap-1 p-2 text-emerald-500">
-                        <Users size={20} />
+                        <Users size={24} />
                         <span className="text-[10px] font-medium">Friends</span>
                     </div>
                 </div>
