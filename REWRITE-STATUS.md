@@ -57,13 +57,19 @@ Expo SDK 57 app on Radar's skeleton: expo-router, NativeWind, Supabase, TanStack
 Zustand + MMKV, FlashList, Reanimated. Emerald accent (`--primary: 160 84% 39%`) is the
 only token that differs from Radar.
 
-**Five tab destinations**, nav islands with a per-screen left action, exactly as Radar:
-Collection (Add sheet) · Discover (search focus) · Stats (period sheet) · Social (inbox) ·
+**Five tab destinations**, nav islands with a per-screen left action, as Radar:
+Collection (Add sheet) · Ratings (search focus) · Stats (period sheet) · Social (inbox) ·
 Profile (settings). Pushed routes: `album/[albumId]`, `release/[albumKey]`,
 `activity/[activityId]`, `history`, `reorder`, `inbox`, `settings`, `login`,
 `u/[userId]/{index,stats,friends}`.
 
-**The rating system** is the headline addition: `album_ratings` is keyed
+**The Ratings tab** is where rating happens, and it replaced a Discover feed — Spotify
+browses better than a copy of it, and the feed made rating look like something you did to
+records you already owned. The board is a tier list (S–F): search any release, drop it in,
+no album row involved. Tiers are derived from the score, never stored (`src/lib/tiers.ts`),
+so the board, the stats and the curve cannot disagree.
+
+**The rating system underneath it:** `album_ratings` is keyed
 `(user_id, album_key)` with **no FK to `albums`**, so a release can be rated whether or
 not it is owned, and the score survives removing and re-adding the album. Four facets at
 half-star steps plus a draggable overall (0.1 steps) with an "average" button. Reachable

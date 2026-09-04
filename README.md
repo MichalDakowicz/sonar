@@ -10,15 +10,17 @@ app and the web, on the same account as [Radar](https://github.com/MichalDakowic
 - **Your shelf, your order.** Filter by format, artist, genre, year or status; group by
   any of them; sort by shelf order, rating, last played or price; drag-free reordering.
 - **Rate anything.** Four facets (production, vocals, lyrics, replay) plus an overall
-  score — and ratings hang off the *release*, so you can rate a record you do not own and
-  keep the score if you sell it.
+  score — and ratings hang off the *release*, so you can rate a record you never owned, or
+  keep the score after selling it.
 - **Spins.** Log a listen from any card, see the whole history, and let it drive
   "recently played", "most spun" and a listening streak.
 - **Wishlist and pre-orders** alongside what you actually have, without polluting the
   numbers: every collection stat counts owned records only.
 - **Pressing details.** Store, price paid, catalogue number, acquisition date, favourite
   tracks, notes.
-- **Discover.** Spotify search and new releases, added to your shelf in one tap.
+- **Ratings page.** A tier list of everything you have an opinion about. Search any
+  release on Spotify and drop it into S–F in one tap — owning it is never required, and the
+  score sticks to the release, not to your copy.
 - **Social.** Friends' activity feed with reactions, friend requests, and a public shelf
   you can share by link — one friend list shared with Radar.
 - **Stats.** Format split, top artists, release eras, genres, where records came from,
