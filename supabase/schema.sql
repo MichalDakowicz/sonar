@@ -82,9 +82,15 @@ create table if not exists public.albums (
 );
 
 create index if not exists albums_user_id_idx            on public.albums (user_id);
-create index if not exists albums_user_id_album_key_idx  on public.albums (user_id, album_key);
 create index if not exists albums_user_id_status_idx     on public.albums (user_id, status);
 create index if not exists albums_user_id_added_at_idx   on public.albums (user_id, added_at desc);
+
+-- UNIQUE, not just an index: one row per release per person. Owning the same
+-- record on vinyl and CD is one row with two `formats`, never two rows — and
+-- the uniqueness is also what `on conflict (user_id, album_key)` needs, which
+-- is how the importer and the migration script avoid doubling a collection on a
+-- second run.
+create unique index if not exists albums_user_id_album_key_key on public.albums (user_id, album_key);
 
 -- One row per listen. The log is the source of truth; albums.last_listened_at
 -- is its mirror. album_key is copied in so a spin survives the album row being
@@ -170,6 +176,24 @@ create table if not exists public.album_activity_comments (
 );
 create index if not exists album_activity_comments_activity_id_created_at_idx
   on public.album_activity_comments (activity_id, created_at);
+
+-- ============================================================================
+-- INDEX MIGRATIONS — for a database created by an earlier run of this file.
+-- The CREATE TABLEs above are skipped entirely once the tables exist, so
+-- anything corrected afterwards has to be applied here too.
+-- ============================================================================
+
+-- (user_id, album_key) shipped as a plain index and had to become UNIQUE: an
+-- upsert cannot name a conflict target that is not a constraint, so
+-- `on conflict (user_id, album_key)` failed with "there is no unique or
+-- exclusion constraint matching the ON CONFLICT specification" and the JSON
+-- import could not run at all.
+--
+-- The unique index above is created with `if not exists`, which matches on the
+-- name — so the old non-unique index has to go by its own name or the pair
+-- would both exist, with only the redundant one being consulted. Dropping an
+-- index destroys no rows.
+drop index if exists public.albums_user_id_album_key_idx;
 
 -- ============================================================================
 -- RLS — the same two-policy shape Radar uses: owner writes, visible reads.

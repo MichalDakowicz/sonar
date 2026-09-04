@@ -226,8 +226,24 @@ async function main() {
 
     // Albums first: the spin rows are matched back to them afterwards, and a
     // spin whose album is missing is still worth keeping as history.
-    const { error: albumError } = await supabase.from('albums').upsert(albums, { onConflict: 'user_id,album_key' });
-    if (albumError) fail(`Album insert failed: ${albumError.message}`);
+    //
+    // Deduplicated here rather than upserted on (user_id, album_key). The pair
+    // is unique in the schema, but a database created before that index was
+    // corrected only has a plain index on it, and an upsert cannot name a
+    // conflict target that is not a constraint — this script has to run against
+    // whichever of the two it meets. Filtering keeps it re-runnable either way.
+    const { data: present, error: presentError } = await supabase
+      .from('albums')
+      .select('album_key')
+      .eq('user_id', supabaseUserId);
+    if (presentError) fail(`Could not read existing albums: ${presentError.message}`);
+    const have = new Set((present ?? []).map((row) => row.album_key as string));
+
+    const newAlbums = albums.filter((row) => !have.has(row.album_key));
+    if (newAlbums.length > 0) {
+      const { error: albumError } = await supabase.from('albums').insert(newAlbums);
+      if (albumError) fail(`Album insert failed: ${albumError.message}`);
+    }
 
     if (ratings.length > 0) {
       const { error: ratingError } = await supabase
@@ -257,7 +273,10 @@ async function main() {
       if (spinError) fail(`Spin insert failed: ${spinError.message}`);
     }
 
-    console.log(`  wrote ${albums.length} albums, ${ratings.length} ratings, ${fresh.length} spins`);
+    console.log(
+      `  wrote ${newAlbums.length} albums (${albums.length - newAlbums.length} already present), ` +
+        `${ratings.length} ratings, ${fresh.length} spins`,
+    );
   }
 
   if (!commit) console.log('\nDry run — nothing was written. Re-run with --commit.');
