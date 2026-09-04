@@ -30,6 +30,8 @@ Decisions the user made when asked (do not re-ask):
 Branch: **`feat/native-rewrite`** off `main` (`9066abe`). Commits so far:
 
 ```
+63e3561 fix: stop asking Android for a blur it cannot have
+abe7609 docs: refresh the resume brief's header and commit list
 58f982c docs: record the Firebase import and the two fixes it surfaced
 57010fd fix: give the nav islands a real blur target on Android
 a84431b fix(db): make (user_id, album_key) unique so an upsert can target it
@@ -44,6 +46,7 @@ a3022ad feat: add the album data layer and pure collection logic
 9e211e6 feat(db): add Sonar's tables to the shared Supabase project
 f8e8685 chore: scaffold the Expo project on Radar's stack
 571020b chore: archive the Vite and Firebase web app
+9066abe feat: add touch event handling to modals and popovers for better mobile support
 ```
 
 No PR opened. Do not merge without being asked.
@@ -140,10 +143,27 @@ resolve it.
   app filtered out of its own list too. 0 ratings — the legacy `rating` field exists on 85
   rows but every value is 0, because the old edit modal never wrote it. The second
   Firebase user (`goober`, 0 albums) was left alone.
-- **Two bugs found and fixed by doing all this**, both committed:
-  `(user_id, album_key)` had to become a UNIQUE index (an upsert cannot name a
-  non-constraint as its conflict target, so the import failed outright), and the nav
-  islands' blur had no `blurTarget`, so on Android the glass was silently a flat tint.
+- **Confirmed rendering on device** with real data: Stats shows 54 Collection / 52
+  Wishlist, Vinyl 41 / CD 14, most-collected artists, and the four spun albums.
+- **One bug found and fixed by doing all this**: `(user_id, album_key)` had to become a
+  UNIQUE index — an upsert cannot name a non-constraint as its conflict target, so the
+  import failed outright.
+
+### Do not try this again: the nav islands cannot blur on Android
+
+The islands logged "the blurTarget prop has not been configured" and fell back to a flat
+tint. Giving them a `blurTarget` **crashed the app on launch** — a native stack overflow,
+`computeTransformImpl` recursing to 500+ frames in libhwui.
+
+The reason is structural: expo-blur's Dimezis backend re-draws a nominated view, and this
+bar renders *inside* the navigator, so every candidate target is an ancestor that contains
+the bar. The blur then redraws a view containing the blur, forever. `blurMethod` is now
+`'none'` outright, which is what Android was effectively getting anyway.
+
+Real glass would mean moving the bar out of the navigator (root layout, absolutely
+positioned, `tabBar={() => null}`) and above a content-only `BlurTargetView` — and the
+five pushed routes that mount `<NavIslands />` themselves would have to stop doing so, or
+they would reintroduce the same cycle. That is a shell refactor, not a prop.
 
 ## 6. Next actions
 
