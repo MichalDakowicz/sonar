@@ -6,7 +6,6 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { BlurTargetProvider } from '@/components/layout/BlurTarget';
 import { NAV_DESTINATIONS } from '@/components/layout/navDestinations';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
@@ -59,11 +58,7 @@ export default function RootLayout() {
             <ToastProvider>
               <AuthGate>
                 <AppShell>
-                  {/* Everything the nav islands blur has to live inside this,
-                      and the bar itself outside it — see BlurTarget. */}
-                  <BlurTargetProvider>
-                    <Stack screenOptions={{ headerShown: false }} />
-                  </BlurTargetProvider>
+                  <Stack screenOptions={{ headerShown: false }} />
                 </AppShell>
               </AuthGate>
             </ToastProvider>

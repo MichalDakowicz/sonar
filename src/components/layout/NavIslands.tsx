@@ -1,11 +1,10 @@
 import { BlurView } from 'expo-blur';
 import { usePathname, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { useBlurTarget } from '@/components/layout/BlurTarget';
 import { DEST_HEIGHT, DEST_WIDTH, NavDestinationButton } from '@/components/layout/NavDestinationButton';
 import { useNavAction, useSocialAlert } from '@/components/layout/navActions';
 import { activeTabFor, NAV_DESTINATIONS, type NavDestination } from '@/components/layout/navDestinations';
@@ -21,9 +20,20 @@ const HAIRLINE = 'rgba(255,255,255,0.09)';
 const ACTIVE_PLATE = 'rgba(255,255,255,0.12)';
 const ICON_ON = '#fafafa';
 
-// Real backdrop blur on Android needs the Dimezis backend; without it BlurView
-// falls back to a flat tint, which would leave the islands looking painted on.
-const BLUR_METHOD = Platform.OS === 'android' ? 'dimezisBlurView' : 'none';
+// iOS and web blur the real backdrop. Android has no such thing: expo-blur's
+// Dimezis backend re-draws a view you nominate with `blurTarget`, and this bar
+// has no view it can legally nominate — it renders *inside* the navigator, so
+// every candidate is an ancestor that contains the bar. Pointing at one is not
+// merely ineffective, it is a cycle: the blur redraws the target, the target
+// contains the blur, and the app dies on launch in libhwui with a recursive
+// computeTransformImpl stack overflow. That was tried, and reverted.
+//
+// Android therefore gets the translucent fill and hairline below and no blur —
+// which is what it was getting before too, since asking for dimezis without a
+// target only logged a warning and fell back. Real glass here means moving the
+// bar out of the navigator and above a content-only target: a shell refactor,
+// not a prop.
+const BLUR_METHOD = 'none';
 
 const DESTINATIONS = NAV_DESTINATIONS.slice(0, 4);
 const PROFILE = NAV_DESTINATIONS[NAV_DESTINATIONS.length - 1];
@@ -60,7 +70,6 @@ export function NavIslands() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
 
-  const blurTarget = useBlurTarget();
   const activeTab = activeTabFor(pathname);
   const action = useNavAction(pathname, activeTab);
   const socialAlert = useSocialAlert();
@@ -105,7 +114,7 @@ export function NavIslands() {
       // islands themselves may swallow taps — the rest is scrolling content.
       pointerEvents="box-none"
     >
-      <Island style={styles.round} blurTarget={blurTarget}>
+      <Island style={styles.round}>
         <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={styles.roundPress}>
           <action.Icon size={21} color={ICON_ON} strokeWidth={2.2} />
           {action.badge > 0 && (
@@ -116,7 +125,7 @@ export function NavIslands() {
         </Pressable>
       </Island>
 
-      <Island style={styles.pill} blurTarget={blurTarget}>
+      <Island style={styles.pill}>
         <Animated.View style={[styles.marker, markerStyle]} pointerEvents="none" />
         {DESTINATIONS.map((destination) => (
           <NavDestinationButton
@@ -129,7 +138,7 @@ export function NavIslands() {
         ))}
       </Island>
 
-      <Island style={[styles.round, { borderColor: profileActive ? ACCENT : HAIRLINE }]} blurTarget={blurTarget}>
+      <Island style={[styles.round, { borderColor: profileActive ? ACCENT : HAIRLINE }]}>
         <Pressable
           onPress={() => go(PROFILE)}
           accessibilityRole="tab"
@@ -144,23 +153,14 @@ export function NavIslands() {
   );
 }
 
-/** One glass plate: blurred backdrop, translucent fill, hairline edge. */
-function Island({
-  children,
-  style,
-  blurTarget,
-}: {
-  children: ReactNode;
-  style?: object | object[];
-  blurTarget?: RefObject<View | null>;
-}) {
+/** One plate: translucent fill, hairline edge, and a blurred backdrop off Android. */
+function Island({ children, style }: { children: ReactNode; style?: object | object[] }) {
   return (
     <View style={[styles.island, style]}>
       <BlurView
         intensity={38}
         tint="dark"
         blurMethod={BLUR_METHOD}
-        blurTarget={blurTarget}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
