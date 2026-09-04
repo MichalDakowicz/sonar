@@ -15,7 +15,13 @@ const dark = {
   '--popover': '0 0% 3.9%',
   '--popover-foreground': '0 0% 98%',
   '--primary': '160 84% 39%',
-  '--primary-foreground': '0 0% 4%',
+  // White on the emerald fill, as Radar does on its blue. Near-black measures
+  // better against this particular green, but it reads as a mistake on a dark
+  // UI where every other label is light, so legibility loses to consistency
+  // here. The emerald itself stays bright because it is also the icon and
+  // hairline colour against near-black backgrounds, where a darker green would
+  // disappear.
+  '--primary-foreground': '0 0% 98%',
   '--secondary': '0 0% 14.9%',
   '--secondary-foreground': '0 0% 98%',
   '--muted': '0 0% 14.9%',

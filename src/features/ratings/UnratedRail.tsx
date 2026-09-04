@@ -32,18 +32,22 @@ export function UnratedRail({ albums, ratingFor, onPick }: UnratedRailProps) {
     () =>
       albums
         .filter((album) => isOwned(album) && !ratingFor(album.albumKey))
-        .sort((a, b) => Date.parse(b.addedAt) - Date.parse(a.addedAt))
-        .slice(0, LIMIT),
+        .sort((a, b) => Date.parse(b.addedAt) - Date.parse(a.addedAt)),
     [albums, ratingFor],
   );
 
   if (unrated.length === 0) return null;
 
+  // The header counts everything still unrated, not the slice on screen: this
+  // number is how much work is left, and a rail capped at two dozen covers
+  // reporting "24" on a shelf of fifty says the opposite.
+  const shown = unrated.slice(0, LIMIT);
+
   return (
     <View className="gap-2 pt-2">
       <SectionHeader title="On your shelf, unrated" count={unrated.length} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerClassName="gap-3 px-4">
-        {unrated.map((album) => (
+        {shown.map((album) => (
           <Pressable
             key={album.id}
             onPress={() =>
