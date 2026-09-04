@@ -1,7 +1,11 @@
 # Sonar native rewrite — status and resume brief
 
-**Purpose of this file:** everything needed to resume the rewrite cold. If this file is
-mentioned, read it and continue at "Next actions" without re-exploring either repo.
+**Purpose of this file:** everything needed to resume cold. If this file is mentioned,
+read it and continue at "Next actions" without re-exploring either repo.
+
+**State: the rewrite is complete and verified as far as this machine allows.** Types,
+lint and 82 tests pass; the web export builds; a release APK builds. What is left is
+listed under "Next actions" — chiefly running the SQL and installing on a phone.
 
 ---
 
@@ -17,211 +21,180 @@ Decisions the user made when asked (do not re-ask):
 
 | Question | Answer |
 | --- | --- |
-| Where does the rewrite live | `C:\stuff\sonar`, old Vite/Firebase app moved to `C:\stuff\sonar\archive\` |
-| Firebase RTDB data | Migrate — write a one-off script (`scripts/migrate-firebase.ts`) |
+| Where the rewrite lives | `C:\stuff\sonar`; old Vite/Firebase app moved to `archive/` |
+| Firebase RTDB data | Migrate — `scripts/migrate-firebase.ts` (written, dry-run tested) |
 | Rating shape | Facets + overall, Radar style: `production`, `vocals`, `lyrics`, `replay`, `overall` |
-| Spotify credentials | Provided; client id `64728b5e13784d218442b13368311be3`, secret in `.env` (gitignored). No redirect URI needed — client-credentials flow only |
+| Spotify credentials | Provided; client id `64728b5e13784d218442b13368311be3`, secret in `.env` (gitignored). Client-credentials flow, so no redirect URI needed |
 
-Working branch: **`feat/native-rewrite`** (branched from `main`, commit `9066abe`).
+Branch: **`feat/native-rewrite`** off `main` (`9066abe`). Commits so far:
 
----
+```
+75f2686 feat(social): add comment threads on feed activity
+88bb24b test: cover the pure collection and rating rules
+47d6744 docs: document the rewrite, and add the Firebase import
+551dce4 feat: rebuild every screen on the native skeleton
+07f688b feat: port the shell and card system from Radar
+a3022ad feat: add the album data layer and pure collection logic
+9e211e6 feat(db): add Sonar's tables to the shared Supabase project
+f8e8685 chore: scaffold the Expo project on Radar's stack
+571020b chore: archive the Vite and Firebase web app
+```
 
-## 2. What the two apps are
+No PR opened. Do not merge without being asked.
 
-- **Radar** (`C:\stuff\radar`) — the reference. Expo SDK 57, expo-router, NativeWind,
-  Supabase, TanStack Query, zustand + MMKV, FlashList, Reanimated 4. Movie/TV watchlist.
-  Its `CLAUDE.md` holds the working agreement; `rewrite/10-code-conventions.md` holds the
-  file-size and layering rules (~200-line soft cap, one component per file, screens compose
-  only, logic in `features/*/use*.ts`, pure helpers in `src/lib/`).
-- **Sonar** (`C:\stuff\sonar`) — was a Vite + Firebase RTDB + Capacitor web app for a music
-  collection (albums, formats, spins, wishlist, friends, public shelf, stats). Now being
-  rebuilt as an Expo app on Radar's skeleton.
+## 2. What was built
 
-## 3. Shared-database design (already settled)
+Expo SDK 57 app on Radar's skeleton: expo-router, NativeWind, Supabase, TanStack Query,
+Zustand + MMKV, FlashList, Reanimated. Emerald accent (`--primary: 160 84% 39%`) is the
+only token that differs from Radar.
 
-One Supabase project, shared with Radar (free plan = one project). **Shared, not duplicated:**
-`public.profiles`, `public.friendships`, `public.friend_requests`, `public.user_settings`,
-`private.can_view()`, and the `accept_friend_request` / `decline_friend_request` /
-`remove_friend` / `can_view_user` RPCs — all created by Radar's `supabase/schema.sql`, which
-must be run first.
+**Five tab destinations**, nav islands with a per-screen left action, exactly as Radar:
+Collection (Add sheet) · Discover (search focus) · Stats (period sheet) · Social (inbox) ·
+Profile (settings). Pushed routes: `album/[albumId]`, `release/[albumKey]`,
+`activity/[activityId]`, `history`, `reorder`, `inbox`, `settings`, `login`,
+`u/[userId]/{index,stats,friends}`.
 
-**Sonar's own tables** (in `C:\stuff\sonar\supabase\schema.sql`, written, idempotent, not yet
-run against the project):
+**The rating system** is the headline addition: `album_ratings` is keyed
+`(user_id, album_key)` with **no FK to `albums`**, so a release can be rated whether or
+not it is owned, and the score survives removing and re-adding the album. Four facets at
+half-star steps plus a draggable overall (0.1 steps) with an "average" button. Reachable
+from an owned album, a Spotify search result, a friend's shelf and a feed row — all of
+which route to the same `AlbumDetailScreen`.
 
-- `albums` — collection rows. `album_key` identity, `formats text[]`, `status` CHECK
-  (`Collection|Wishlist|Pre-order`), pressing fields (`store_name`, `price_paid`,
-  `catalog_number`, `acquisition_date`), `custom_order` (shelf order), `last_listened_at`
-  (mirror of the newest spin).
-- `album_spins` — one row per listen; the source of truth for "last played".
-- `album_ratings` — **keyed `(user_id, album_key)` with no FK to `albums`.** This is what
-  makes rating an unowned release possible, and what makes a rating survive removing the
-  album. Carries a title/artist/cover snapshot so it renders alone.
-- `album_activity` (+ `album_activity_reactions`, `album_activity_comments`) — Sonar's feed.
-  Separate from Radar's `public.activity` on purpose: Radar's client `select *`s that table
-  and normalizes every row as a film, so album rows there would render as broken movies.
+Also: spins (log/delete, with the `albums.last_listened_at` mirror re-derived on delete),
+formats as a multi-select, wishlist/pre-orders, pressing details, shelf reordering,
+grouping, facet filters, Spotify search + new releases, stats (formats, artists, eras,
+genres, stores, spend, spins, streak, rating curve), the social feed with reactions and
+comment threads, friend requests, public shelf, JSON import/export that also reads the
+legacy Firebase export.
 
-RLS mirrors Radar exactly: owner-all policy plus a `private.can_view(user_id)` read policy.
-Privacy is therefore **one switch across both apps** — deliberate, documented in the SQL.
+## 3. Shared-database design
 
-`user_settings`: Sonar reads/writes **only** `friends_visibility` and `theme` (see
-`src/lib/userSettings.ts`); the sparse upsert cannot clobber Radar's columns. Radar's
-`profiles.favorites` (its pinned top 4, capped at 4) is **never** written by Sonar — Sonar's
-shelf derives "top rated" instead.
+One Supabase project with Radar — full rationale and rules in `docs/shared-database.md`.
 
-`album_key` (`src/lib/albumKey.ts`): `spotify:<id>` when Spotify knows the release, else
-`manual:<slug(first artist)>|<slug(title)>`.
+Shared and **not** re-created: `public.profiles`, `public.friendships`,
+`public.friend_requests`, `public.user_settings`, `private.can_view()`, and the
+accept/decline/remove-friend + `can_view_user` RPCs. All from Radar's
+`supabase/schema.sql`, which must be run first.
 
----
+Sonar's own tables (in `supabase/schema.sql`, idempotent, **not yet run**): `albums`,
+`album_spins`, `album_ratings`, `album_activity`, `album_activity_reactions`,
+`album_activity_comments`.
 
-## 4. Project state — files that exist
+Hard rules: Sonar writes only `friends_visibility` and `theme` on `user_settings`;
+`profiles.favorites` is Radar's and is never touched (Sonar's shelf derives "rated
+highest" instead); album activity lives in its own table because Radar `select *`s
+`public.activity` and normalizes every row as a film.
 
-Root config (all written): `package.json` (Expo 57 dep set, scripts incl. `migrate:firebase`),
-`app.json` (name Sonar, slug sonar, scheme sonar, package `com.michaldakowicz.sonar`, version
-3.0.0, versionCode 1), `tsconfig.json` (`@/*` → `src/*`, `@/assets/*` → `assets/*`),
-`babel.config.js`, `metro.config.js` (svg transformer + NativeWind), `tailwind.config.js`
-(copied from Radar), `nativewind-env.d.ts`, `eslint.config.js` (ignores `archive/*`),
-`firebase.json` + `.firebaserc` (hosting project `sonar-tracker`, SPA rewrite, serves `dist/`),
-`.gitignore`, `.env` (real values: shared Supabase URL/anon/service-role copied from Radar,
-Spotify id/secret, `FIREBASE_DATABASE_URL`), `.env.example`, `supabase/schema.sql`.
+`album_key` = `spotify:<id>`, else `manual:<slug(first artist)>|<slug(title)>`
+(`src/lib/albumKey.ts`).
 
-### Copied from Radar verbatim (then re-pointed at album types / emerald accent)
+## 4. Verification already done
 
-`src/global.css`, `src/theme/ThemeProvider.tsx`, `src/lib/{mmkvStorage,stripUndefined,queryClient,supabase,shelfLink}.ts`,
-`src/components/ui/{Sheet,SheetPanel,SheetDialog,sheetTypes,Toast,SearchInput,EmptyState,LoadingState,ErrorState,SectionHeader,ConfirmDialog,BackButton}`,
-`src/components/layout/{ContentShell,ScreenTop,NavDestinationButton,NavIslands,PublicHeader}`,
-`src/hooks/{useResponsive,useNavBarSpace,useScrollToTopOnChange,useSearchFocusRegistration,useWebShortcuts,useFriends,useUserSearch}`,
-`src/store/{tabReload,searchFocus,quickAddSheet,statsPeriod,socialWatermark}`,
-`src/features/auth/AuthProvider.tsx`, `src/features/friends/{Avatar,FriendCard,FriendRequestItem,FriendRequestListener}`,
-`src/features/settings/{SettingsSection,Segmented,ThemeControl,PrivacyControl}`,
-`src/components/stats/{QuickStat,ThinProgressBar,DecadeBars,GenreTag,HistoryPill}`,
-`assets/brand/google.svg`.
+| Check | Result |
+| --- | --- |
+| `npx tsc --noEmit` | clean |
+| `npx expo lint` | clean (0 errors, 0 warnings) |
+| `npx jest` | 8 suites, 82 tests, all pass |
+| `npm run build:web` | exports to `dist/` |
+| `npx expo prebuild -p android` | clean |
+| `./gradlew assembleRelease` | `android/app/build/outputs/apk/release/sonar-v3.0.0.apk` (114 MB, all 4 ABIs) |
+| `scripts/migrate-firebase.ts` | dry run against a sample legacy export reports the right counts |
 
-A sweep replaced Radar's blue `hsl(217 91% 60%)` / `hsla(217,91%,60%,…)` with Sonar's emerald
-`hsl(160 84% 39%)` / `hsla(160,84%,39%,…)` in every copied file (0 occurrences remain).
+### Two build gotchas worth remembering
 
-### Written for Sonar
+1. **JDK.** The machine's default is JDK 25, under which every CMake configure task fails
+   with `A restricted method in java.lang.System has been called`. Build with the Android
+   Studio JBR:
+   `JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew assembleRelease`.
+2. **Gradle memory.** The template's 2 GB heap / 512 MB metaspace dies mid-build with a
+   bare `Metaspace` error surfacing as `Could not initialize class …ProtoBuf$…`.
+   `plugins/withGradleMemory.js` re-applies `-Xmx4608m -XX:MaxMetaspaceSize=1536m` on
+   every prebuild (`android/` is regenerated output, so it cannot be edited by hand).
 
-- **Theme/types:** `src/theme/colors.ts` (emerald `--primary`, plus a `COLORS` table for the
-  places NativeWind classes cannot reach), `src/types/album.ts`.
-- **Pure lib:** `albumKey`, `formats`, `albumStatus`, `normalizeAlbum` (read boundary +
-  `toAlbumRow` write map), `personalScore`, `ratings` (facet table, `recalcOverall`,
-  `toRatingsPayload`, `isEmptyRatings`), `collectionSearch`, `collectionSort` (comparators,
-  `shelfOrder`, `orderBetween`, `canReorder`), `collectionFacets` (facets + matchers +
-  `groupAlbums`), `spins` (summaries, `recentlyPlayed`, `spinsPerDay`, `listeningStreak`),
-  `stats` (`computeStats`), `statsPeriod`, `utils`, `spotify` (client-credentials token cache,
-  search, album, tracks, new releases, artist albums, `parseAlbumInput`), `socialFeed`
-  (feed kinds/verbs/`weekDigest`/`freshCountsSince`), `ratingDistribution`, `shelfSummary`,
-  `dataTransfer` (v2 export + importer that also reads the legacy Firebase export),
-  `userSettings`.
-- **Hooks:** `useAlbums` (query + realtime + add/update/remove + activity logging),
-  `useSpins` (log/remove + mirror maintenance + `usePublicSpins`), `useAlbumRatings`
-  (`ratingFor`, `scoreFor`, `saveRating`, `removeRating`, `usePublicRatings`), `useProfile`
-  (shared identity row, no `favorites`), `useUserSettings` (two shared columns only).
-- **Nav:** `src/components/layout/navDestinations.tsx` (Collection / Discover / Stats /
-  Social / Profile), `navActions.tsx` (per-tab left action: Add sheet, search focus, period
-  sheet, inbox, settings; Back on `/settings`, `/inbox`, `/history`).
-- **Media components:** `CoverImage`, `FormatBadges` (+ `FormatLine`, `StatusBadge`,
-  `StatusPill`), `RatingStars` (+ `ScoreBadge`), `AlbumCard` (variants `cover` / `row` /
-  `featured` / `compact`; square art, not 2:3), `AlbumGrid` (column table + gaps),
-  `AlbumCarousel`.
-- **Collection feature:** `store/collectionPrefs.ts` (+ `activeFilterCount`),
-  `useCollectionFilters`, `CollectionToolbar`, `FacetFilterRow` (+ `ChoiceRow`),
-  `CollectionFilterSheet`, `GroupingSheet`, `CollectionSection`, `CollectionGroups`.
-- **Add flow:** `useQuickAdd`, `useSpotifySearch` (+ `useDebounced`, `useSpotifyAlbum`,
-  `useNewReleases`), `FormatStatusPicker`, `AddSearchResults`, `QuickAddSheet`.
-- **Album detail/edit:** `edit/albumForm.ts` (form ⇄ payload, `validate`, `isDirty`),
-  `edit/useEditAlbumForm.ts`, `detail/DetailHero`, `detail/PressingDetails`,
-  `detail/TrackList`, `detail/SpinHistory`, `detail/useAlbumDetail` (resolves owned row *or*
-  Spotify release from one key), `detail/AlbumDetailScreen` (one screen for owned + unowned).
-- **Ratings feature:** `ratings/RatingSlider.tsx` (tap steps + precise drag),
-  `ratings/RatingEditor.tsx` — works with no album row, which is the headline new feature.
-- **Routes so far:** `src/app/_layout.tsx`, `src/app/(tabs)/_layout.tsx`,
-  `src/app/(tabs)/index.tsx` (collection), `src/app/(tabs)/discover.tsx`.
+Also: `jest-expo` is pinned to `57.0.1`, not `~57.0.1` — 57.0.5 peer-wants a
+`@react-native/jest-preset` newer than react-native 0.86.0 accepts, and npm refuses to
+resolve it.
 
----
+## 5. Next actions
 
-## 5. Next actions (in order)
+1. **Run the SQL.** Supabase Dashboard → SQL Editor → paste `supabase/schema.sql` → Run
+   (Radar's `supabase/schema.sql` first if the project were ever rebuilt). The file opens
+   with a prerequisite check that raises a readable error if the shared tables are
+   missing. **Nothing in the app works until this is done** — every screen queries tables
+   that do not exist yet.
+2. **Install on the phone.** No device was attached during the build
+   (`adb devices` empty), so this was never installed or launched:
+   ```sh
+   adb install -r android/app/build/outputs/apk/release/sonar-v3.0.0.apk
+   adb shell monkey -p com.michaldakowicz.sonar -c android.intent.category.LAUNCHER 1
+   adb shell pidof com.michaldakowicz.sonar        # empty = it died on boot
+   adb logcat -d -s ReactNativeJS:* AndroidRuntime:E
+   ```
+3. **Then deploy web** — `npm run deploy:web` (Firebase project `sonar-tracker`).
+   Deliberately **not** run yet: hosting currently serves the old working web app, and
+   replacing it before step 1 would put a broken site live.
+4. **Google sign-in** needs the Google provider enabled on the Supabase project (Radar
+   already uses it, so it most likely is) and `sonar://` in the allowed redirect list.
+   Email/password sign-in works with no extra setup.
+5. **Import the old data** once signed in, so the Supabase user id exists:
+   ```sh
+   npm run migrate:firebase -- --map <firebaseUid>=<supabaseUserId> --file backup.json
+   # then again with --commit
+   ```
+   Or use Settings → Data → Import / export with a JSON export.
+6. Smoke-test on device, in this order: sign in → add an album from Discover → rate
+   something you did **not** add → log a spin → check Stats and History → open a friend's
+   shelf.
 
-1. **`src/lib/releasePreview.ts`** — `releaseToAlbum(release: SpotifyAlbum): Album`, turning a
-   Spotify hit into a card-shaped `Album` whose `id` is the release key. **`discover.tsx`
-   already imports this and it does not exist yet — write it first or the build fails.**
-2. **Stats:** `src/features/stats/useStats.ts`, `StatsView.tsx`, `StatsPeriodSheet.tsx`
-   (the tabs layout already mounts `StatsPeriodSheet` with an `onPicked` prop), then
-   `src/app/(tabs)/stats.tsx`.
-3. **Social:** `src/features/social/{FeedView,FeedCard,FriendsView,FindView,ActivityRail}.tsx`
-   + `useFriendActivity.ts` (+ `useFeedWatermark.ts` over `store/socialWatermark`), then
-   `src/app/(tabs)/social.tsx` (segmented Activity / Friends / Find, mirroring Radar) and
-   `src/app/inbox.tsx` (friend requests).
-4. **Profile:** `src/features/profile/{MyShelfHeader,ShelfSections,RatingsDistribution,RandomSpinSheet}.tsx`,
-   reuse `EditProfileSheet` (port Radar's — needs `expo-image-picker` +
-   `expo-image-manipulator`, both already in `package.json`), then `src/app/(tabs)/profile.tsx`.
-5. **Remaining routes:** `src/app/login.tsx` (port Radar's, rebrand to Sonar + emerald),
-   `src/app/settings.tsx` (Privacy, Appearance/theme + card size, Data → import/export,
-   share shelf link, sign out), `src/app/history.tsx` (full spin log, delete a spin),
-   `src/app/album/[albumId].tsx`, `src/app/release/[albumKey].tsx`, `src/app/reorder.tsx`
-   (shelf order — see "Reorder" note below), `src/app/friend/[friendId]/index.tsx`,
-   `src/app/u/[userId]/{_layout,index,stats,friends}.tsx` (public shelf, anon-readable).
-6. **Settings feature files:** `ImportExportSheet.tsx` (over `lib/dataTransfer`, using
-   `expo-document-picker` + `expo-file-system` + `expo-sharing`), `DataTools.tsx`.
-7. **Auth:** `src/features/auth/authActions.ts` — port Radar's but **drop the
-   `clearPushToken()` call** (Sonar has no push). Google OAuth via `expo-web-browser` + PKCE.
-8. **Assets + icons:** copy `archive/assets/icon*.svg` and `archive/logo.svg` into
-   `assets/brand/` (need `logo.svg`, `logo-mono.svg`, `splash.svg`), port
-   `radar/scripts/generate-icons.mjs` to `scripts/generate-icons.mjs`, run `npm run icons`
-   to produce `assets/images/{icon,favicon,splash-icon,android-icon-*}.png`.
-9. **Migration script:** `scripts/migrate-firebase.ts` — read the Firebase RTDB export
-   (`users/<uid>/albums`, `.../history`, `.../profile`), map legacy fields (`format` →
-   `formats`, `lastListened` → `last_listened_at`, epoch millis → ISO, `rating` → an
-   `album_ratings` row), insert with the service-role key. Needs a firebase-uid → supabase-uid
-   mapping argument; print a dry-run summary first.
-10. **Tests:** co-located `*.test.ts` for the pure libs — `albumKey`, `collectionSort`,
-    `collectionFacets`, `ratings`, `spins`, `stats`, `dataTransfer`, `albumForm`.
-11. **Docs:** rewrite `README.md`, write `CLAUDE.md` (adapt Radar's working agreement: branch
-    triage, conventional commits with **no self-attribution**, version bump in `app.json`,
-    `UPDATE.md` notes, tests+lint+tsc before commit, build to the phone over ADB then
-    `npm run deploy:web`), `UPDATE.md` + `UPDATE-schema.md`, and a short
-    `docs/shared-database.md` explaining the one-project setup.
-12. **Verify:** `npm install`, then `npx tsc --noEmit`, `npm run lint`, `npm test`,
-    `npm run build:web`. Then Android: `npx expo prebuild -p android`,
-    `cd android && ./gradlew assembleRelease`, `adb install -r`, launch with
-    `adb shell monkey -p com.michaldakowicz.sonar -c android.intent.category.LAUNCHER 1`.
-13. **Run the SQL:** tell the user to paste `supabase/schema.sql` into the Supabase SQL
-    editor (Radar's `schema.sql` first if the project is fresh). The file's prerequisite
-    check raises a clear error if Radar's tables are absent.
-14. Commit in coherent steps on `feat/native-rewrite`. Do not merge or open a PR unasked.
+## 6. Known gaps, deliberate
 
-### Reorder note
+- **No push notifications.** Radar has an inbox, FCM, quiet hours and a background
+  metadata refresh; none of it was ported. There is no Sonar equivalent of "a release you
+  are waiting for lands tomorrow" yet, and the friend-request toast covers the rest.
+- **No recaps, no ranked years, no compare-taste / watch-together.** Radar-specific
+  surfaces with no obvious music analogue; left out rather than half-built.
+- **Reorder is buttons, not drag.** Up / down / to-top / to-bottom on a dedicated screen,
+  writing a sparse midpoint (`orderBetween`). A drag gesture inside a virtualized,
+  recycling grid fights the list for every pixel; `canReorder()` encodes when hand order
+  is even coherent.
+- **Spins are not replayed on import.** A restored log cannot be told from a real one, and
+  each row would move the last-played mirror.
+- **The Spotify secret ships in the client.** `EXPO_PUBLIC_*` values are compiled into the
+  bundle, so the client-credentials secret is extractable from the APK — same exposure the
+  old Vite app had with its `VITE_*` vars. It only buys public catalogue reads, and can be
+  rotated in the Spotify dashboard. Moving it behind a Supabase edge function is the fix if
+  that ever matters.
 
-The legacy web app had dnd-kit drag-to-reorder. The plan is a dedicated `/reorder` screen
-(list view, move up / down / to top / to bottom) writing `custom_order` via
-`orderBetween()` from `lib/collectionSort.ts`, rather than drag inside a virtualized list.
-`canReorder()` already encodes when hand order is coherent (shelf-order sort, no grouping, no
-search, no filters).
+## 7. Conventions to keep following
 
----
+`CLAUDE.md` is the working agreement (branch triage, conventional commits with **no
+self-attribution**, version bump in `app.json` + `APP_VERSION` in `src/app/settings.tsx`,
+`UPDATE.md` notes per `UPDATE-schema.md`, tests + lint + tsc before commit, phone build
+then web deploy). Structure rules:
 
-## 6. Conventions to keep following
-
-- ~200-line soft cap per file, 300 hard. One component per file. Named exports.
-- Screens (`src/app/**`) compose only: no filter logic, no data massaging.
+- ~200 line soft cap per file, 300 hard. One component per file, named exports.
+- Screens (`src/app/**`) compose only — no filter logic, no data massaging.
 - Derive logic → `features/*/use*.ts`; pure helpers → `src/lib/*.ts`; presentational
   components take props and import neither `supabase` nor `spotify`.
-- All reads go through the `normalizeAlbum` / `normalizeRating` / `normalizeSpin` boundary;
-  all writes through `toAlbumRow` + `stripUndefined`.
-- Durable UI prefs → zustand + MMKV (`store/*`), never ad-hoc AsyncStorage.
-- Comments explain *why*, in the register Radar's source uses — no narration of what the code
-  plainly does, no "ported from X" without the reason.
-- Emerald is the accent; use theme tokens (`bg-background`, `text-foreground`, `text-primary`,
-  `border-border`) and `COLORS.*` for icon/style props.
-- Commits: Conventional Commits, imperative, ~50 char subject, **no Claude self-attribution**.
+- **`src/lib/` imports no React or react-native.** This was learned the hard way: icon
+  tables in `lib/formats` and `lib/albumStatus` made the pure modules untestable (jest
+  choked on lucide's ESM). Glyphs now live in `src/components/media/Glyphs.tsx`, written
+  as components with a branch per case — a `const Icon = lookup(x)` reference is a
+  component identity minted during render, which the static-components lint rule rejects.
+- Reads go through `normalizeAlbum` / `normalizeRating` / `normalizeSpin`; writes through
+  `toAlbumRow` + `stripUndefined`.
+- Durable UI prefs → Zustand + MMKV (`src/store/`).
+- Emerald accent via theme tokens and `COLORS.*` (`src/theme/colors.ts`) — no stray hex.
 
-## 7. Environment facts
+## 8. Environment facts
 
-- Working dir `C:\stuff\sonar`; Windows, PowerShell + Git Bash both available.
-- Large file writes: use the Write tool. A bash heredoc containing SQL `$$` blocks failed
+- Working dir `C:\stuff\sonar`; Windows, PowerShell + Git Bash.
+- Use the Write tool for large files. A bash heredoc containing SQL `$$` blocks failed
   once mid-build — do not fight it.
-- Supabase project ref lives in `.env` (`EXPO_PUBLIC_SUPABASE_URL`, shared with Radar).
-- Web hosting: Firebase project `sonar-tracker`, serves `dist/` (`npm run deploy:web`).
-- The old app is at `archive/` and still readable for behaviour questions
+- `.env` holds the shared Supabase URL/anon/service-role keys, the Spotify pair, and
+  `FIREBASE_DATABASE_URL`. `.env.example` is the committed shape.
+- Web hosting: Firebase project `sonar-tracker`, serves `dist/`.
+- The old app is still readable at `archive/` for behaviour questions
   (`archive/src/pages/Home.jsx`, `archive/src/pages/Stats.jsx`,
   `archive/src/features/albums/*`, `archive/src/hooks/*`).
