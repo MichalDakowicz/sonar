@@ -49,10 +49,13 @@ export const NAV_DESTINATIONS: NavDestination[] = [
     label: 'Social',
     tabName: 'social',
     icon: (color, size) => <Users color={color} size={size} />,
-    // /inbox and a friend's shelf are pushed from this tab, so it stays lit
-    // while you are down there.
+    // /inbox, an activity thread and a friend's shelf are pushed from this tab,
+    // so it stays lit while you are down there.
     isActive: (pathname) =>
-      pathname.startsWith('/social') || pathname.startsWith('/friend') || pathname.startsWith('/inbox'),
+      pathname.startsWith('/social') ||
+      pathname.startsWith('/friend') ||
+      pathname.startsWith('/inbox') ||
+      pathname.startsWith('/activity'),
   },
   {
     href: '/profile',

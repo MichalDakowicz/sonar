@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { LoadingState } from '@/components/ui/LoadingState';
 import { Avatar } from '@/features/friends/Avatar';
 import { FeedCard } from '@/features/social/FeedCard';
+import { useCommentCounts } from '@/features/social/useActivityComments';
 import { useActivityReactions } from '@/features/social/useActivityReactions';
 import { useNavBarSpace } from '@/hooks/useNavBarSpace';
 import { useProfileMap } from '@/hooks/useProfile';
@@ -49,7 +50,9 @@ export function FeedView({ me, friends, events, loading, since, coverFor, selfId
   }, [events, onlyId, selfId, filter]);
 
   const authors = useProfileMap(useMemo(() => events.map((event) => event.userId), [events]));
-  const reactions = useActivityReactions(useMemo(() => visible.map((event) => event.id), [visible]));
+  const visibleIds = useMemo(() => visible.map((event) => event.id), [visible]);
+  const reactions = useActivityReactions(visibleIds);
+  const commentCountFor = useCommentCounts(visibleIds);
 
   const railPeople: (Profile | null)[] = [me, ...friends];
 
@@ -128,7 +131,9 @@ export function FeedView({ me, friends, events, loading, since, coverFor, selfId
               coverUrl={coverFor(event.albumKey)}
               fresh={!!since && Date.parse(event.createdAt) > Date.parse(since)}
               reactions={reactions.reactionsFor(event.id)}
+              commentCount={commentCountFor(event.id)}
               onToggleReaction={(kind) => reactions.toggleReaction(event.id, kind)}
+              onOpenThread={() => router.push({ pathname: '/activity/[activityId]', params: { activityId: event.id } })}
               onOpenAlbum={() =>
                 event.albumKey
                   ? router.push({ pathname: '/release/[albumKey]', params: { albumKey: event.albumKey } })

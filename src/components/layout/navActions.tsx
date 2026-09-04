@@ -28,9 +28,11 @@ const ICONS: Record<string, LucideIcon> = {
 // stays lit, but the left island becomes Back: a tab's usual action here would
 // be the screen you are already standing on.
 const NESTED_ROUTES = ['/settings', '/inbox', '/history', '/reorder'];
+/** Nested routes carrying a parameter, matched by prefix. */
+const NESTED_PREFIXES = ['/activity/'];
 
 export function isNestedNavRoute(pathname: string): boolean {
-  return NESTED_ROUTES.includes(pathname);
+  return NESTED_ROUTES.includes(pathname) || NESTED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
 }
 
 /**

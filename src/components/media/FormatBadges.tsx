@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 
-import { formatIcon, statusIcon } from '@/components/media/formatIcons';
+import { FormatGlyph, StatusGlyph } from '@/components/media/Glyphs';
 import { statusMeta } from '@/lib/albumStatus';
 import type { Album, AlbumStatus, Format } from '@/types/album';
 
@@ -14,14 +14,11 @@ export function FormatBadges({ formats, size = 12 }: { formats: Format[]; size?:
 
   return (
     <View className="flex-row items-center gap-1">
-      {formats.map((format) => {
-        const Icon = formatIcon(format);
-        return (
-          <View key={format} className="rounded bg-black/55 p-1">
-            <Icon size={size} color="#e4e4e7" />
-          </View>
-        );
-      })}
+      {formats.map((format) => (
+        <View key={format} className="rounded bg-black/55 p-1">
+          <FormatGlyph format={format} size={size} color="#e4e4e7" />
+        </View>
+      ))}
     </View>
   );
 }
@@ -40,11 +37,10 @@ export function FormatLine({ formats }: { formats: Format[] }) {
 export function StatusBadge({ status, size = 13 }: { status: AlbumStatus; size?: number }) {
   if (status === 'Collection') return null;
   const meta = statusMeta(status);
-  const Icon = statusIcon(status);
 
   return (
     <View className="rounded bg-black/55 p-1">
-      <Icon size={size} color={meta.color} fill={status === 'Wishlist' ? meta.color : 'transparent'} />
+      <StatusGlyph status={status} size={size} color={meta.color} filled />
     </View>
   );
 }
@@ -52,14 +48,13 @@ export function StatusBadge({ status, size = 13 }: { status: AlbumStatus; size?:
 /** Status as a labelled pill, for detail screens and pickers. */
 export function StatusPill({ album }: { album: Album }) {
   const meta = statusMeta(album.status);
-  const Icon = statusIcon(album.status);
 
   return (
     <View
       className="flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1"
       style={{ backgroundColor: `${meta.color}22` }}
     >
-      <Icon size={13} color={meta.color} />
+      <StatusGlyph status={album.status} color={meta.color} />
       <Text className="text-xs font-semibold" style={{ color: meta.color }}>
         {meta.label}
       </Text>

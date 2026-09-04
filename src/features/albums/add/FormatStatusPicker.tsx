@@ -1,6 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 
-import { formatIcon, statusIcon } from '@/components/media/formatIcons';
+import { FormatGlyph, StatusGlyph } from '@/components/media/Glyphs';
 import { STATUSES } from '@/lib/albumStatus';
 import { FORMATS } from '@/lib/formats';
 import { COLORS } from '@/theme/colors';
@@ -29,7 +29,6 @@ export function FormatStatusPicker({ status, formats, onStatusChange, onToggleFo
         <View className="flex-row gap-2">
           {STATUSES.map((option) => {
             const active = status === option.value;
-            const Icon = statusIcon(option.value);
             return (
               <Pressable
                 key={option.value}
@@ -40,7 +39,7 @@ export function FormatStatusPicker({ status, formats, onStatusChange, onToggleFo
                   backgroundColor: active ? `${option.color}22` : 'transparent',
                 }}
               >
-                <Icon size={15} color={active ? option.color : COLORS.muted} />
+                <StatusGlyph status={option.value} size={15} color={active ? option.color : COLORS.muted} />
                 <Text
                   className="text-xs font-semibold"
                   style={{ color: active ? option.color : COLORS.muted }}
@@ -59,7 +58,6 @@ export function FormatStatusPicker({ status, formats, onStatusChange, onToggleFo
         <View className="flex-row flex-wrap gap-2">
           {FORMATS.map((option) => {
             const active = formats.includes(option.value);
-            const Icon = formatIcon(option.value);
             return (
               <Pressable
                 key={option.value}
@@ -70,7 +68,7 @@ export function FormatStatusPicker({ status, formats, onStatusChange, onToggleFo
                   backgroundColor: active ? COLORS.accentSoft : 'transparent',
                 }}
               >
-                <Icon size={14} color={active ? COLORS.accent : COLORS.muted} />
+                <FormatGlyph format={option.value} size={14} color={active ? COLORS.accent : COLORS.muted} />
                 <Text className={active ? 'text-xs font-bold text-primary' : 'text-xs font-semibold text-muted-foreground'}>
                   {option.label}
                 </Text>

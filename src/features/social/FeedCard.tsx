@@ -1,3 +1,4 @@
+import { MessageCircle } from 'lucide-react-native';
 import { Pressable, Text, View } from 'react-native';
 
 import { CoverImage } from '@/components/media/CoverImage';
@@ -14,9 +15,12 @@ type FeedCardProps = {
   /** Rows newer than your last visit wear a dot. */
   fresh?: boolean;
   reactions: ReactionState;
+  /** How many comments the thread holds, for the badge. */
+  commentCount: number;
   onToggleReaction: (kind: ReactionKind) => void;
   onOpenAlbum: () => void;
   onOpenProfile: () => void;
+  onOpenThread: () => void;
 };
 
 /**
@@ -32,9 +36,11 @@ export function FeedCard({
   coverUrl,
   fresh,
   reactions,
+  commentCount,
   onToggleReaction,
   onOpenAlbum,
   onOpenProfile,
+  onOpenThread,
 }: FeedCardProps) {
   const name = author?.displayName || author?.username || 'Someone';
 
@@ -84,6 +90,18 @@ export function FeedCard({
             </Pressable>
           );
         })}
+
+        <View className="flex-1" />
+
+        <Pressable
+          onPress={onOpenThread}
+          accessibilityLabel={commentCount > 0 ? `${commentCount} comments` : 'Comment'}
+          className="min-h-[32px] flex-row items-center gap-1.5 rounded-full px-2.5"
+          style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
+        >
+          <MessageCircle size={14} color={COLORS.muted} />
+          {commentCount > 0 && <Text className="text-xs text-muted-foreground">{commentCount}</Text>}
+        </Pressable>
       </View>
     </View>
   );
