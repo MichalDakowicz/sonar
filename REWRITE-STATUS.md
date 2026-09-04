@@ -3,9 +3,10 @@
 **Purpose of this file:** everything needed to resume cold. If this file is mentioned,
 read it and continue at "Next actions" without re-exploring either repo.
 
-**State: shipped.** Types, lint and 82 tests pass; the schema is applied; the APK is
-installed and boots on the device; the web build is live at https://sonar-tracker.web.app.
-What is left is a real-session walkthrough and the data import — see "Next actions".
+**State: shipped and populated.** Types, lint and 82 tests pass; the schema is applied;
+the APK is installed and boots on the device; the web build is live at
+https://sonar-tracker.web.app; the old Firebase collection (106 albums, 9 spins) is
+imported. What is left is a real-session walkthrough — see "Next actions".
 
 ---
 
@@ -22,13 +23,18 @@ Decisions the user made when asked (do not re-ask):
 | Question | Answer |
 | --- | --- |
 | Where the rewrite lives | `C:\stuff\sonar`; old Vite/Firebase app moved to `archive/` |
-| Firebase RTDB data | Migrate — `scripts/migrate-firebase.ts` (written, dry-run tested) |
+| Firebase RTDB data | Migrate — `scripts/migrate-firebase.ts`, run for real on 2026-09-04 |
 | Rating shape | Facets + overall, Radar style: `production`, `vocals`, `lyrics`, `replay`, `overall` |
 | Spotify credentials | Provided; client id `64728b5e13784d218442b13368311be3`, secret in `.env` (gitignored). Client-credentials flow, so no redirect URI needed |
 
 Branch: **`feat/native-rewrite`** off `main` (`9066abe`). Commits so far:
 
 ```
+58f982c docs: record the Firebase import and the two fixes it surfaced
+57010fd fix: give the nav islands a real blur target on Android
+a84431b fix(db): make (user_id, album_key) unique so an upsert can target it
+9818538 docs: record the first device install and web deploy
+4c26119 docs: record what the rewrite covers and what is left
 75f2686 feat(social): add comment threads on feed activity
 88bb24b test: cover the pure collection and rating rules
 47d6744 docs: document the rewrite, and add the Firebase import
