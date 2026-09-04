@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.michaldakowicz.sonar",
+      "sha256_cert_fingerprints": [
+        "C5:1E:4D:08:FF:F3:E1:51:66:04:A1:4F:61:05:7B:0E:1D:2D:75:6F:53:12:79:11:99:13:0F:52:95:7C:67:3D"
+      ]
+    }
+  }
+]

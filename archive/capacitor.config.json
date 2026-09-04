@@ -1,0 +1,12 @@
+{
+  "appId": "com.michaldakowicz.sonar",
+  "appName": "Sonar",
+  "webDir": "dist",
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "997107035921-93gs23ocsjpln0vjk9m55jeaofuv6bhn.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": false
+    }
+  }
+}

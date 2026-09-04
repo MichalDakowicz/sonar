@@ -11,6 +11,15 @@ node_modules
 dist
 dist-ssr
 *.local
+web-build
+
+# Expo
+.expo
+expo-env.d.ts
+
+# Native prebuild output — regenerated from app.json, never hand-edited
+android
+ios
 
 # Editor directories and files
 .vscode/*
@@ -23,14 +32,11 @@ dist-ssr
 *.sln
 *.sw?
 
-plan.md
-feature_ideas.md
+# Secrets and local project links
 .env
 .env.local
 .firebase
 .firebaserc
-.github/
-# Mobile Build Artifacts
-android/app/google-services.json
-android/app/src/main/assets/public
-android/app/src/main/assets/capacitor.config.json
+
+plan.md
+feature_ideas.md
