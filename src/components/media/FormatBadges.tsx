@@ -52,7 +52,7 @@ export function StatusPill({ album }: { album: Album }) {
   return (
     <View
       className="flex-row items-center gap-1.5 self-start rounded-full px-2.5 py-1"
-      style={{ backgroundColor: `${meta.color}22` }}
+      style={{ backgroundColor: meta.tint }}
     >
       <StatusGlyph status={album.status} color={meta.color} />
       <Text className="text-xs font-semibold" style={{ color: meta.color }}>

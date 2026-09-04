@@ -36,7 +36,7 @@ export function FormatStatusPicker({ status, formats, onStatusChange, onToggleFo
                 className="flex-1 flex-row items-center justify-center gap-1.5 rounded-lg border py-2.5"
                 style={{
                   borderColor: active ? option.color : 'hsl(0 0% 20%)',
-                  backgroundColor: active ? `${option.color}22` : 'transparent',
+                  backgroundColor: active ? option.tint : 'transparent',
                 }}
               >
                 <StatusGlyph status={option.value} size={15} color={active ? option.color : COLORS.muted} />

@@ -6,15 +6,20 @@ import type { Album, AlbumStatus } from '@/types/album';
  * about "your collection" filters on that, because a wishlist entry is a plan,
  * not a record you have.
  *
- * The colour rides along here (it is a data property of the status, and the
- * cards, chips and pills must agree on it) but the icon does not: `lib/` stays
+ * The colours ride along here (they are data properties of the status, and the
+ * cards, chips and pills must agree on them) but the icon does not: `lib/` stays
  * free of React so these rules can be tested without a renderer. Glyphs live in
- * components/media/formatIcons.
+ * components/media/Glyphs.
+ *
+ * `tint` is a real colour, not `color + '22'`. That trick only works on hex, and
+ * Collection's used to be `hsl(160 84% 39%)` — concatenating onto that produced
+ * an unparseable string, which React Native resolved to opaque green, so the
+ * selected Collection chip drew a solid block over its own icon and label.
  */
-export const STATUSES: { value: AlbumStatus; label: string; color: string }[] = [
-  { value: 'Collection', label: 'Collection', color: 'hsl(160 84% 39%)' },
-  { value: 'Wishlist', label: 'Wishlist', color: '#ec4899' },
-  { value: 'Pre-order', label: 'Pre-order', color: '#3b82f6' },
+export const STATUSES: { value: AlbumStatus; label: string; color: string; tint: string }[] = [
+  { value: 'Collection', label: 'Collection', color: '#10b981', tint: 'rgba(16,185,129,0.16)' },
+  { value: 'Wishlist', label: 'Wishlist', color: '#ec4899', tint: 'rgba(236,72,153,0.16)' },
+  { value: 'Pre-order', label: 'Pre-order', color: '#3b82f6', tint: 'rgba(59,130,246,0.16)' },
 ];
 
 const BY_VALUE = new Map(STATUSES.map((status) => [status.value, status]));
