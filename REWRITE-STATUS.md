@@ -3,9 +3,9 @@
 **Purpose of this file:** everything needed to resume cold. If this file is mentioned,
 read it and continue at "Next actions" without re-exploring either repo.
 
-**State: the rewrite is complete and verified as far as this machine allows.** Types,
-lint and 82 tests pass; the web export builds; a release APK builds. What is left is
-listed under "Next actions" — chiefly running the SQL and installing on a phone.
+**State: shipped.** Types, lint and 82 tests pass; the schema is applied; the APK is
+installed and boots on the device; the web build is live at https://sonar-tracker.web.app.
+What is left is a real-session walkthrough and the data import — see "Next actions".
 
 ---
 
@@ -77,7 +77,7 @@ Shared and **not** re-created: `public.profiles`, `public.friendships`,
 accept/decline/remove-friend + `can_view_user` RPCs. All from Radar's
 `supabase/schema.sql`, which must be run first.
 
-Sonar's own tables (in `supabase/schema.sql`, idempotent, **not yet run**): `albums`,
+Sonar's own tables (in `supabase/schema.sql`, idempotent, already applied): `albums`,
 `album_spins`, `album_ratings`, `album_activity`, `album_activity_reactions`,
 `album_activity_comments`.
 
@@ -116,38 +116,37 @@ Also: `jest-expo` is pinned to `57.0.1`, not `~57.0.1` — 57.0.5 peer-wants a
 `@react-native/jest-preset` newer than react-native 0.86.0 accepts, and npm refuses to
 resolve it.
 
-## 5. Next actions
+## 5. Shipped
 
-1. **Run the SQL.** Supabase Dashboard → SQL Editor → paste `supabase/schema.sql` → Run
-   (Radar's `supabase/schema.sql` first if the project were ever rebuilt). The file opens
-   with a prerequisite check that raises a readable error if the shared tables are
-   missing. **Nothing in the app works until this is done** — every screen queries tables
-   that do not exist yet.
-2. **Install on the phone.** No device was attached during the build
-   (`adb devices` empty), so this was never installed or launched:
-   ```sh
-   adb install -r android/app/build/outputs/apk/release/sonar-v3.0.0.apk
-   adb shell monkey -p com.michaldakowicz.sonar -c android.intent.category.LAUNCHER 1
-   adb shell pidof com.michaldakowicz.sonar        # empty = it died on boot
-   adb logcat -d -s ReactNativeJS:* AndroidRuntime:E
-   ```
-3. **Then deploy web** — `npm run deploy:web` (Firebase project `sonar-tracker`).
-   Deliberately **not** run yet: hosting currently serves the old working web app, and
-   replacing it before step 1 would put a broken site live.
-4. **Google sign-in** needs the Google provider enabled on the Supabase project (Radar
-   already uses it, so it most likely is) and `sonar://` in the allowed redirect list.
-   Email/password sign-in works with no extra setup.
-5. **Import the old data** once signed in, so the Supabase user id exists:
+- **Schema applied.** All of `albums`, `album_spins`, `album_ratings`, `album_activity`
+  answer over PostgREST, so `supabase/schema.sql` has been run against the shared project.
+- **Installed and launched on the device** (`00166152F003681`). The old Capacitor build
+  had to be uninstalled first — same package id, different signing key
+  (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`); it stored nothing locally, so nothing was lost.
+  App boots to the login screen, pid alive, `ReactNativeJS: Running "main"`, no errors in
+  `AndroidRuntime:E`.
+- **Web deployed** to https://sonar-tracker.web.app (Firebase project `sonar-tracker`),
+  after the phone install passed and the schema was confirmed present.
+
+## 6. Next actions
+
+1. **Sign in on the phone** and walk the app: add an album from Discover → rate something
+   you did **not** add → log a spin → Stats and History → a friend's shelf. Nothing past
+   the login screen has been exercised with a real session yet.
+2. **Google sign-in** needs the Google provider enabled on the Supabase project (Radar
+   uses it, so it should be) and `sonar://` in the allowed redirect list. Email/password
+   needs nothing.
+3. **Import the old Firebase data** once signed in, so the Supabase user id exists:
    ```sh
    npm run migrate:firebase -- --map <firebaseUid>=<supabaseUserId> --file backup.json
    # then again with --commit
    ```
-   Or use Settings → Data → Import / export with a JSON export.
-6. Smoke-test on device, in this order: sign in → add an album from Discover → rate
-   something you did **not** add → log a spin → check Stats and History → open a friend's
-   shelf.
+   Or Settings → Data → Import / export with a JSON export.
+4. **Release when happy**: `UPDATE.md` heading `— Unreleased` → the date, then
+   `gh release create v3.0.0 android/app/build/outputs/apk/release/sonar-v3.0.0.apk`.
+   The branch has no PR yet and has not been merged.
 
-## 6. Known gaps, deliberate
+## 7. Known gaps, deliberate
 
 - **No push notifications.** Radar has an inbox, FCM, quiet hours and a background
   metadata refresh; none of it was ported. There is no Sonar equivalent of "a release you
@@ -166,7 +165,7 @@ resolve it.
   rotated in the Spotify dashboard. Moving it behind a Supabase edge function is the fix if
   that ever matters.
 
-## 7. Conventions to keep following
+## 8. Conventions to keep following
 
 `CLAUDE.md` is the working agreement (branch triage, conventional commits with **no
 self-attribution**, version bump in `app.json` + `APP_VERSION` in `src/app/settings.tsx`,
@@ -187,7 +186,7 @@ then web deploy). Structure rules:
 - Durable UI prefs → Zustand + MMKV (`src/store/`).
 - Emerald accent via theme tokens and `COLORS.*` (`src/theme/colors.ts`) — no stray hex.
 
-## 8. Environment facts
+## 9. Environment facts
 
 - Working dir `C:\stuff\sonar`; Windows, PowerShell + Git Bash.
 - Use the Write tool for large files. A bash heredoc containing SQL `$$` blocks failed
