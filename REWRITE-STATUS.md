@@ -127,6 +127,17 @@ resolve it.
   `AndroidRuntime:E`.
 - **Web deployed** to https://sonar-tracker.web.app (Firebase project `sonar-tracker`),
   after the phone install passed and the schema was confirmed present.
+- **The old Firebase data is imported.** `sonar-tracker-default-rtdb-export.json` →
+  106 albums and 9 spins under `d98515a9-0228-48fe-91b8-26ebb7c73f77`
+  (mrmichu220@gmail.com, username `michu`), verified by row count against PostgREST.
+  4 rows were skipped: ghost nodes carrying only a `lastListened` stamp, which the old
+  app filtered out of its own list too. 0 ratings — the legacy `rating` field exists on 85
+  rows but every value is 0, because the old edit modal never wrote it. The second
+  Firebase user (`goober`, 0 albums) was left alone.
+- **Two bugs found and fixed by doing all this**, both committed:
+  `(user_id, album_key)` had to become a UNIQUE index (an upsert cannot name a
+  non-constraint as its conflict target, so the import failed outright), and the nav
+  islands' blur had no `blurTarget`, so on Android the glass was silently a flat tint.
 
 ## 6. Next actions
 
@@ -136,12 +147,10 @@ resolve it.
 2. **Google sign-in** needs the Google provider enabled on the Supabase project (Radar
    uses it, so it should be) and `sonar://` in the allowed redirect list. Email/password
    needs nothing.
-3. **Import the old Firebase data** once signed in, so the Supabase user id exists:
-   ```sh
-   npm run migrate:firebase -- --map <firebaseUid>=<supabaseUserId> --file backup.json
-   # then again with --commit
-   ```
-   Or Settings → Data → Import / export with a JSON export.
+3. **Re-run `supabase/schema.sql`** at some point. The live database still has the old
+   non-unique index: the script was made not to need it, so the import went through, but
+   nothing at database level stops a duplicate album row until the file is applied again.
+   It is idempotent, and the 106 imported rows are already unique on the pair.
 4. **Release when happy**: `UPDATE.md` heading `— Unreleased` → the date, then
    `gh release create v3.0.0 android/app/build/outputs/apk/release/sonar-v3.0.0.apk`.
    The branch has no PR yet and has not been merged.
