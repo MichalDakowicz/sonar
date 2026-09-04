@@ -1,10 +1,11 @@
 import { BlurView } from 'expo-blur';
 import { usePathname, useRouter } from 'expo-router';
-import { useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, type ReactNode, type RefObject } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useBlurTarget } from '@/components/layout/BlurTarget';
 import { DEST_HEIGHT, DEST_WIDTH, NavDestinationButton } from '@/components/layout/NavDestinationButton';
 import { useNavAction, useSocialAlert } from '@/components/layout/navActions';
 import { activeTabFor, NAV_DESTINATIONS, type NavDestination } from '@/components/layout/navDestinations';
@@ -59,6 +60,7 @@ export function NavIslands() {
   const { user } = useAuth();
   const { profile } = useProfile(user?.id);
 
+  const blurTarget = useBlurTarget();
   const activeTab = activeTabFor(pathname);
   const action = useNavAction(pathname, activeTab);
   const socialAlert = useSocialAlert();
@@ -103,7 +105,7 @@ export function NavIslands() {
       // islands themselves may swallow taps — the rest is scrolling content.
       pointerEvents="box-none"
     >
-      <Island style={styles.round}>
+      <Island style={styles.round} blurTarget={blurTarget}>
         <Pressable onPress={action.onPress} accessibilityRole="button" accessibilityLabel={action.label} style={styles.roundPress}>
           <action.Icon size={21} color={ICON_ON} strokeWidth={2.2} />
           {action.badge > 0 && (
@@ -114,7 +116,7 @@ export function NavIslands() {
         </Pressable>
       </Island>
 
-      <Island style={styles.pill}>
+      <Island style={styles.pill} blurTarget={blurTarget}>
         <Animated.View style={[styles.marker, markerStyle]} pointerEvents="none" />
         {DESTINATIONS.map((destination) => (
           <NavDestinationButton
@@ -127,7 +129,7 @@ export function NavIslands() {
         ))}
       </Island>
 
-      <Island style={[styles.round, { borderColor: profileActive ? ACCENT : HAIRLINE }]}>
+      <Island style={[styles.round, { borderColor: profileActive ? ACCENT : HAIRLINE }]} blurTarget={blurTarget}>
         <Pressable
           onPress={() => go(PROFILE)}
           accessibilityRole="tab"
@@ -143,13 +145,22 @@ export function NavIslands() {
 }
 
 /** One glass plate: blurred backdrop, translucent fill, hairline edge. */
-function Island({ children, style }: { children: ReactNode; style?: object | object[] }) {
+function Island({
+  children,
+  style,
+  blurTarget,
+}: {
+  children: ReactNode;
+  style?: object | object[];
+  blurTarget?: RefObject<View | null>;
+}) {
   return (
     <View style={[styles.island, style]}>
       <BlurView
         intensity={38}
         tint="dark"
-        experimentalBlurMethod={BLUR_METHOD}
+        blurMethod={BLUR_METHOD}
+        blurTarget={blurTarget}
         style={StyleSheet.absoluteFill}
         pointerEvents="none"
       />
