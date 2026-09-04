@@ -113,7 +113,7 @@ highest" instead); album activity lives in its own table because Radar `select *
 | `npx jest` | 8 suites, 82 tests, all pass |
 | `npm run build:web` | exports to `dist/` |
 | `npx expo prebuild -p android` | clean |
-| `./gradlew assembleRelease` | `android/app/build/outputs/apk/release/sonar-v3.0.0.apk` (114 MB, all 4 ABIs) |
+| `./gradlew assembleRelease` | `android/app/build/outputs/apk/release/sonar-v2.0.0.apk` (114 MB, all 4 ABIs) |
 | `scripts/migrate-firebase.ts` | dry run against a sample legacy export reports the right counts |
 
 ### Two build gotchas worth remembering
@@ -184,7 +184,7 @@ they would reintroduce the same cycle. That is a shell refactor, not a prop.
    nothing at database level stops a duplicate album row until the file is applied again.
    It is idempotent, and the 106 imported rows are already unique on the pair.
 4. **Release when happy**: `UPDATE.md` heading `— Unreleased` → the date, then
-   `gh release create v3.0.0 android/app/build/outputs/apk/release/sonar-v3.0.0.apk`.
+   `gh release create v2.0.0 android/app/build/outputs/apk/release/sonar-v2.0.0.apk`.
    The branch has no PR yet and has not been merged.
 
 ## 7. Known gaps, deliberate

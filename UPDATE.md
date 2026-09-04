@@ -1,6 +1,6 @@
 # Update notes
 
-## 3.0.0 — Unreleased
+## 2.0.0 — 2026-09-04
 
 ### Added
 - Sonar is a native Android app, with the web version built from the same code
