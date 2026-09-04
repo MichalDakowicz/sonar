@@ -18,7 +18,7 @@ export type NavAction = {
 
 const ICONS: Record<string, LucideIcon> = {
   index: Plus,
-  discover: Search,
+  ratings: Search,
   stats: CalendarRange,
   social: Inbox,
   profile: Settings,
@@ -58,7 +58,7 @@ export function useNavAction(pathname: string, activeTab: string | null): NavAct
     switch (activeTab) {
       case 'index':
         return presentQuickAdd?.();
-      case 'discover':
+      case 'ratings':
         return useSearchFocus.getState().focus?.();
       case 'stats':
         return presentPeriod?.();
@@ -75,7 +75,7 @@ export function useNavAction(pathname: string, activeTab: string | null): NavAct
 
   const labels: Record<string, string> = {
     index: 'Add an album',
-    discover: 'Search',
+    ratings: 'Rate anything',
     stats: `Time period: ${periodShortLabel(period)}`,
     social: inboxCount ? `Requests, ${inboxCount} waiting` : 'Friend requests',
     profile: 'Settings',

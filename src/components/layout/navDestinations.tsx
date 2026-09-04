@@ -1,5 +1,5 @@
 import { type Href } from 'expo-router';
-import { BarChart3, CircleUserRound, Compass, Disc3, Users } from 'lucide-react-native';
+import { BarChart3, CircleUserRound, Disc3, Star, Users } from 'lucide-react-native';
 import { type ReactNode } from 'react';
 
 // The five destinations, in bar order. Two consumers read this list and they
@@ -30,12 +30,13 @@ export const NAV_DESTINATIONS: NavDestination[] = [
     isActive: (pathname) => pathname === '/',
   },
   {
-    href: '/discover',
-    label: 'Discover',
-    tabName: 'discover',
-    icon: (color, size) => <Compass color={color} size={size} />,
-    // A release page opened from a search result belongs to Discover.
-    isActive: (pathname) => pathname.startsWith('/discover') || pathname.startsWith('/release'),
+    href: '/ratings',
+    label: 'Ratings',
+    tabName: 'ratings',
+    icon: (color, size) => <Star color={color} size={size} />,
+    // A release page is opened from the board or from its search, so it belongs
+    // to this tab — it is also the only route where an unowned album is edited.
+    isActive: (pathname) => pathname.startsWith('/ratings') || pathname.startsWith('/release'),
   },
   {
     href: '/stats',

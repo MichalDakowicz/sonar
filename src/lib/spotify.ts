@@ -156,22 +156,3 @@ export async function fetchAlbumTracks(id: string): Promise<SpotifyTrack[]> {
   );
   return data.items.map((item) => ({ number: item.track_number, title: item.name, durationMs: item.duration_ms }));
 }
-
-/** The Discover tab's front page. `country` narrows it to a release market. */
-export async function fetchNewReleases(limit = 40): Promise<SpotifyAlbum[]> {
-  const data = await spotifyGet<{ albums: { items: RawAlbum[] } }>(`/browse/new-releases?limit=${limit}`);
-  return data.albums.items.map(toAlbum);
-}
-
-/** More by the same act — the "related" rail on a release page. */
-export async function fetchArtistAlbums(artistName: string, limit = 20): Promise<SpotifyAlbum[]> {
-  const artists = await spotifyGet<{ artists: { items: { id: string }[] } }>(
-    `/search?q=${encodeURIComponent(artistName)}&type=artist&limit=1`,
-  );
-  const artistId = artists.artists.items[0]?.id;
-  if (!artistId) return [];
-  const data = await spotifyGet<{ items: RawAlbum[] }>(
-    `/artists/${artistId}/albums?include_groups=album,single&limit=${limit}`,
-  );
-  return data.items.map(toAlbum);
-}

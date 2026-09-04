@@ -53,7 +53,7 @@ export default function TabsLayout() {
         screenOptions={{ headerShown: false, sceneStyle: { backgroundColor: 'hsl(0 0% 3.9%)' } }}
       >
         <Tabs.Screen name="index" options={{ title: 'Collection' }} />
-        <Tabs.Screen name="discover" options={{ title: 'Discover' }} />
+        <Tabs.Screen name="ratings" options={{ title: 'Ratings' }} />
         <Tabs.Screen name="stats" options={{ title: 'Stats' }} />
         <Tabs.Screen name="social" options={{ title: 'Social' }} />
         <Tabs.Screen name="profile" options={{ title: 'Profile' }} />

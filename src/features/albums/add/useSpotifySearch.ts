@@ -1,14 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
-import {
-  fetchAlbum,
-  fetchNewReleases,
-  isSpotifyConfigured,
-  parseAlbumInput,
-  searchAlbums,
-  type SpotifyAlbum,
-} from '@/lib/spotify';
+import { fetchAlbum, isSpotifyConfigured, parseAlbumInput, searchAlbums, type SpotifyAlbum } from '@/lib/spotify';
 
 /** Debounce a fast-changing string, so a keystroke is not a network call. */
 export function useDebounced<T>(value: T, delay = 400): T {
@@ -61,21 +54,4 @@ export function useSpotifyAlbum(spotifyId: string | null | undefined) {
     staleTime: 24 * 60 * 60 * 1000,
   });
   return { album: query.data ?? null, loading: query.isLoading, error: query.error };
-}
-
-/** Discover's front page. Cached for an hour — new releases land weekly. */
-export function useNewReleases() {
-  const query = useQuery({
-    queryKey: ['spotifyNewReleases'],
-    queryFn: () => fetchNewReleases(),
-    enabled: isSpotifyConfigured(),
-    staleTime: 60 * 60 * 1000,
-  });
-  return {
-    releases: query.data ?? [],
-    loading: query.isLoading,
-    error: query.error,
-    unconfigured: !isSpotifyConfigured(),
-    refetch: query.refetch,
-  };
 }
