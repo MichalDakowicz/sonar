@@ -1,8 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Sonar</string>
-    <string name="title_activity_main">Sonar</string>
-    <string name="package_name">com.michaldakowicz.sonar</string>
-    <string name="custom_url_scheme">com.michaldakowicz.sonar</string>
-    <string name="server_client_id">997107035921-93gs23ocsjpln0vjk9m55jeaofuv6bhn.apps.googleusercontent.com</string>
-</resources>
