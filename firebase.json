@@ -16,6 +16,10 @@
       {
         "source": "/index.html",
         "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
+      {
+        "source": "/favicon.ico",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
       }
     ]
   }
