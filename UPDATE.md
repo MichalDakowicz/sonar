@@ -1,5 +1,11 @@
 # Update notes
 
+## 2.0.1 — Unreleased
+
+### Changed
+- New app icon: a sonar scope sweeping a record, matching Radar and Lidar
+- Sign-in screen leads with the Sonar mark instead of a generic disc
+
 ## 2.0.0 — 2026-09-04
 
 ### Added

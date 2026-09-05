@@ -1,5 +1,4 @@
 import { Redirect, type Href } from 'expo-router';
-import { Disc3 } from 'lucide-react-native';
 import { useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,6 +14,7 @@ import {
 } from 'react-native';
 
 import GoogleIcon from '@/assets/brand/google.svg';
+import Logo from '@/assets/brand/logo.svg';
 import { useToast } from '@/components/ui/Toast';
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from '@/features/auth/authActions';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -61,7 +61,7 @@ export default function Login() {
         >
           <View className="items-center gap-2">
             <View className="h-20 w-20 items-center justify-center rounded-2xl bg-primary/10">
-              <Disc3 size={44} color={COLORS.accent} />
+              <Logo width={48} height={48} />
             </View>
             <Text className="text-4xl font-bold tracking-tight text-foreground">Sonar</Text>
             <Text className="text-center text-muted-foreground">Curate your physical &amp; digital collection.</Text>

@@ -18,7 +18,7 @@ import { MAX_W, useCenteredContentStyle } from '@/hooks/useResponsive';
 import { COLORS } from '@/theme/colors';
 
 const MUTED = COLORS.muted;
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '2.0.1';
 
 /**
  * App preferences, pushed from the gear on the Profile tab rather than owning a
