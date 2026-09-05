@@ -5,6 +5,7 @@
 ### Changed
 - New app icon: a sonar scope sweeping a record, matching Radar and Lidar
 - Sign-in screen leads with the Sonar mark instead of a generic disc
+- Sign-in screen names both siblings, Radar and Lidar, as the same account
 
 ## 2.0.0 — 2026-09-04
 
