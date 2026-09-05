@@ -63,7 +63,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "build:web": "expo export -p web --output-dir dist --clear",
+    "build:web": "expo export -p web --output-dir dist --clear && node ./scripts/stamp-favicon.mjs",
     "deploy:web": "npm run build:web && firebase deploy --only hosting",
     "lint": "expo lint",
     "test": "jest",
