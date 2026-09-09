@@ -1,4 +1,5 @@
 import { albumKey } from '@/lib/albumKey';
+import { parseSpotifyRef } from '@/lib/spotifyLink';
 
 /**
  * Spotify metadata, client-credentials flow.
@@ -25,12 +26,16 @@ export type SpotifyAlbum = {
   albumKey: string;
   title: string;
   artist: string[];
+  /** Credited artists by id, so a release can pivot to who made it. */
+  artistIds: string[];
   coverUrl: string | null;
   releaseDate: string | null;
   releaseDatePrecision: string | null;
   totalTracks: number | null;
   genres: string[];
   url: string;
+  /** Spotify's own grouping. A single is a release you can own a 7" of. */
+  albumType: 'album' | 'single' | 'compilation' | null;
 };
 
 export type SpotifyTrack = { number: number; title: string; durationMs: number };
@@ -82,7 +87,11 @@ async function getAccessToken(): Promise<string> {
   }
 }
 
-async function spotifyGet<T>(path: string): Promise<T> {
+/**
+ * One authenticated GET. Exported so lib/spotifyLookup can reach the track and
+ * artist endpoints without a second token cache.
+ */
+export async function spotifyGet<T>(path: string): Promise<T> {
   const token = await getAccessToken();
   const response = await fetch(`${API}${path}`, { headers: { Authorization: `Bearer ${token}` } });
   if (response.status === 401) {
@@ -95,10 +104,11 @@ async function spotifyGet<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-type RawAlbum = {
+export type RawAlbum = {
   id: string;
+  album_type?: string;
   name: string;
-  artists: { name: string }[];
+  artists: { id?: string; name: string }[];
   release_date: string | null;
   release_date_precision: string | null;
   images: { url: string }[];
@@ -107,12 +117,14 @@ type RawAlbum = {
   external_urls: { spotify: string };
 };
 
-function toAlbum(raw: RawAlbum): SpotifyAlbum {
+/** The read boundary for anything album-shaped Spotify returns. */
+export function toAlbum(raw: RawAlbum): SpotifyAlbum {
   return {
     spotifyId: raw.id,
     albumKey: albumKey({ spotifyId: raw.id, title: raw.name, artist: raw.artists.map((a) => a.name) }),
     title: raw.name,
     artist: raw.artists.map((artist) => artist.name),
+    artistIds: raw.artists.map((artist) => artist.id).filter((id): id is string => !!id),
     // images come widest-first; the first one is the 640px cover.
     coverUrl: raw.images?.[0]?.url ?? null,
     releaseDate: raw.release_date,
@@ -120,18 +132,18 @@ function toAlbum(raw: RawAlbum): SpotifyAlbum {
     totalTracks: raw.total_tracks,
     genres: raw.genres ?? [],
     url: raw.external_urls?.spotify ?? '',
+    albumType: (raw.album_type as SpotifyAlbum['albumType']) ?? null,
   };
 }
 
-/** An album id out of anything a user might paste. */
+/**
+ * An album id out of anything a user might paste. A link to a track or an
+ * artist is not one — the share sheet handles those, because turning them into
+ * something addable takes a choice (features/share).
+ */
 export function parseAlbumInput(input: string): string | null {
-  const value = input.trim();
-  if (!value) return null;
-  if (value.includes('spotify.com/album/')) return value.split('/album/')[1]?.split(/[?#]/)[0] ?? null;
-  if (value.startsWith('spotify:album:')) return value.split(':')[2] ?? null;
-  // A bare 22-character base62 id, which is what the share sheet copies.
-  if (/^[A-Za-z0-9]{22}$/.test(value)) return value;
-  return null;
+  const ref = parseSpotifyRef(input);
+  return ref?.type === 'album' ? ref.id : null;
 }
 
 export async function searchAlbums(query: string, limit = 20): Promise<SpotifyAlbum[]> {

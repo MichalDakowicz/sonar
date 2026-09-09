@@ -13,8 +13,14 @@
  * Pure and dependency-free so the migration script and the tests can use it.
  */
 
-/** Lowercase, collapse whitespace, drop punctuation that varies per pressing. */
-function slug(value: string): string {
+/**
+ * Lowercase, collapse whitespace, drop punctuation that varies per pressing.
+ *
+ * Exported because release *matching* needs the same normalisation the key uses:
+ * lib/releaseMatch compares a song title against an artist's single pressings,
+ * and it must agree with what would key them.
+ */
+export function slug(value: string): string {
   return value
     .toLowerCase()
     .normalize('NFKD')
