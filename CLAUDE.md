@@ -66,7 +66,7 @@ gh pr list --head <branch> --state all --limit 5
 prebuild output, so its `versionName`/`versionCode` are regenerated, never hand-edited.
 
 - Bump `expo.version` when a change is user-visible and will ship: minor for new
-  capability (`3.1.0` → `3.2.0`), patch for fixes only (`3.1.0` → `3.1.1`).
+  capability (`2.0.0` → `2.1.0`), patch for fixes only (`2.1.0` → `2.1.1`).
 - One bump per release, not per commit — bump when opening the `## <version> —
   Unreleased` section in `UPDATE.md`, and keep working under that same version.
 - Bump `expo.android.versionCode` by 1 alongside it, or the APK will not install over
@@ -83,7 +83,7 @@ Read `UPDATE-schema.md` and obey it. Summary of the binding parts:
 - Categories, in order, empty ones omitted: `### Added`, `### Changed`, `### Fixed`,
   `### Removed`.
 - Present tense, sentence case, no trailing period, ~90 chars max. Say what the user can
-  now do, and name the surface (Collection, Discover, Stats, Social, Profile, Settings,
+  now do, and name the surface (Collection, Ratings, Stats, Social, Profile, Settings,
   album detail).
 - **Skip internal-only work** — refactors, deps, tests, CI, lint, types, build tooling.
   If the user cannot notice it, it is not an update note.
