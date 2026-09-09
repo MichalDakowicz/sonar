@@ -1,6 +1,6 @@
 # Update notes
 
-## 2.1.0 — Unreleased
+## 2.1.0 — 2026-09-09
 
 ### Added
 - Share a song, single, album or artist from Spotify straight into Sonar
