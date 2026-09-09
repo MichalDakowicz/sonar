@@ -49,8 +49,24 @@ That is what makes the headline feature work: you can rate a record you do not o
 friend's copy, a search result, something you only ever streamed — and the score survives
 removing the album from your shelf and adding it back later.
 
-`album_key` is the identity of the *release*: `spotify:<id>` when Spotify knows it, else
-`manual:<slug(first artist)>|<slug(title)>` (`src/lib/albumKey.ts`).
+`album_key` is the identity of whatever is being rated (`src/lib/albumKey.ts`):
+
+| Key | What it names |
+| --- | --- |
+| `spotify:<id>` | a release Spotify knows |
+| `manual:<slug(first artist)>|<slug(title)>` | a hand-typed release |
+| `spotify:song:<id>` | one song |
+| `spotify:artist:<id>` | an artist |
+
+`subject_type` (`album` / `song` / `artist`) says which, and is the reason the collection's
+numbers stayed honest when songs and artists became rateable: the shelf stats, the top four
+and the profile curve read releases only, while the Ratings board shows every subject behind
+its own filter. Songs and artists are **rate-only** — there is no shelf row, format or spin
+log behind either, which is what the FK-less table already allowed for.
+
+The column is defaulted rather than backfilled, so every row written before it existed reads
+as a release, which is what they all were. `normalizeRating` also falls back to reading the
+subject off the key, so a row is never mislabelled even if the column is missing.
 
 ## Rules for changing anything
 

@@ -35,6 +35,7 @@ function album(overrides: Partial<Album> = {}): Album {
 function rating(albumKey: string, overall: number): AlbumRating {
   return {
     userId: 'u',
+    subject: 'album',
     albumKey,
     spotifyId: null,
     title: 'T',

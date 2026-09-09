@@ -6,9 +6,16 @@
  * album you only ever streamed — and what makes a rating survive removing the
  * album from your collection and adding it back later.
  *
- * Two shapes, and the prefix says which:
+ * Four shapes, and the prefix says which:
  *   spotify:<id>              a release Spotify knows
+ *   spotify:song:<id>         one song, rateable on its own
+ *   spotify:artist:<id>       an artist, rateable on their whole body of work
  *   manual:<artist>|<title>   a hand-typed entry, keyed by what was typed
+ *
+ * Songs and artists are rate-only: there is no shelf row behind either, which
+ * is exactly what the FK-less ratings table already allowed for. A song is not
+ * folded into its album because they are different opinions — a great single on
+ * a weak record is a normal thing to think.
  *
  * Pure and dependency-free so the migration script and the tests can use it.
  */
@@ -63,7 +70,46 @@ export function isSpotifyKey(key: string): boolean {
   return key.startsWith('spotify:');
 }
 
-/** The Spotify id inside a key, or null for a manual one. */
+const SONG_PREFIX = 'spotify:song:';
+const ARTIST_PREFIX = 'spotify:artist:';
+
+/** One song, scored on its own rather than through the record it sits on. */
+export function songKey(spotifyId: string): string {
+  return `${SONG_PREFIX}${spotifyId}`;
+}
+
+/** An artist, scored on their body of work. */
+export function artistKey(spotifyId: string): string {
+  return `${ARTIST_PREFIX}${spotifyId}`;
+}
+
+/**
+ * What kind of thing a key names. The literal union is `RatingSubject` in
+ * types/album — spelled out here so this file stays dependency-free for the
+ * migration script, which imports it by relative path.
+ *
+ * Anything without a subject prefix is a release, which keeps every key written
+ * before songs and artists existed reading correctly.
+ */
+export function subjectOf(key: string): 'album' | 'song' | 'artist' {
+  if (key.startsWith(SONG_PREFIX)) return 'song';
+  if (key.startsWith(ARTIST_PREFIX)) return 'artist';
+  return 'album';
+}
+
+/**
+ * The Spotify id inside a *release* key, or null for a manual one — and null
+ * for a song or artist key too, so a caller that means "which album is this"
+ * cannot be handed a track id and go looking for it in /albums.
+ */
 export function spotifyIdFromKey(key: string): string | null {
-  return isSpotifyKey(key) ? key.slice('spotify:'.length) : null;
+  return isSpotifyKey(key) && subjectOf(key) === 'album' ? key.slice('spotify:'.length) : null;
+}
+
+/** The Spotify id inside a key of any subject. */
+export function subjectIdFromKey(key: string): string | null {
+  const subject = subjectOf(key);
+  if (subject === 'song') return key.slice(SONG_PREFIX.length) || null;
+  if (subject === 'artist') return key.slice(ARTIST_PREFIX.length) || null;
+  return spotifyIdFromKey(key);
 }

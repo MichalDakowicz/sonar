@@ -1,7 +1,7 @@
-import { albumKey, artistList } from '@/lib/albumKey';
+import { albumKey, artistList, subjectOf } from '@/lib/albumKey';
 import { normalizeStatus } from '@/lib/albumStatus';
 import { normalizeFormats } from '@/lib/formats';
-import type { Album, AlbumRating, Ratings, Spin } from '@/types/album';
+import type { Album, AlbumRating, Ratings, RatingSubject, Spin } from '@/types/album';
 
 // Raw shape of a row from public.albums (supabase/schema.sql).
 export type AlbumRow = {
@@ -152,6 +152,8 @@ export type AlbumRatingRow = {
   release_date: string | null;
   ratings: Ratings | null;
   review: string | null;
+  /** Absent on a row written before songs and artists became rateable. */
+  subject_type: RatingSubject | null;
   created_at: string;
   updated_at: string;
 };
@@ -160,6 +162,9 @@ export function normalizeRating(row: AlbumRatingRow): AlbumRating {
   return {
     userId: row.user_id,
     albumKey: row.album_key,
+    // The key carries the subject too, so a row missing the column still reads
+    // correctly — and a mismatch resolves to whatever the key actually names.
+    subject: row.subject_type ?? subjectOf(row.album_key),
     spotifyId: row.spotify_id,
     title: row.title,
     artist: artistList(row.artist as string[] | string | null),

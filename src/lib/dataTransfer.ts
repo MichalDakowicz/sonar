@@ -1,7 +1,7 @@
-import { albumKey, artistList } from '@/lib/albumKey';
+import { albumKey, artistList, subjectOf } from '@/lib/albumKey';
 import { normalizeStatus } from '@/lib/albumStatus';
 import { normalizeFormats } from '@/lib/formats';
-import type { Album, AlbumRating, Ratings, Spin } from '@/types/album';
+import type { Album, AlbumRating, Ratings, RatingSubject, Spin } from '@/types/album';
 
 // Stable import/export format. The payload is versioned so future shape
 // changes stay backwards-readable, and it carries all three of the things that
@@ -53,6 +53,10 @@ export type ParseResult = {
   spins: PortableSpin[];
   errors: string[];
 };
+
+function isRatingSubject(raw: unknown): raw is RatingSubject {
+  return raw === 'album' || raw === 'song' || raw === 'artist';
+}
 
 function numberOrUndefined(raw: unknown): number | undefined {
   if (raw == null || raw === '') return undefined;
@@ -171,6 +175,8 @@ export function parseImport(text: string): ParseResult {
     if (!title) return;
     ratings.push({
       albumKey: typeof item.albumKey === 'string' && item.albumKey ? item.albumKey : albumKey({ spotifyId, title, artist }),
+      // A score carried on an album row was always about that release.
+      subject: 'album',
       spotifyId,
       title,
       artist,
@@ -195,6 +201,9 @@ export function parseImport(text: string): ParseResult {
     const existing = ratings.findIndex((rating) => rating.albumKey === key);
     const row: PortableRating = {
       albumKey: key,
+      // A backup taken before songs and artists were rateable has no subject
+      // field; the key still says what the row is about.
+      subject: isRatingSubject(item.subject) ? item.subject : subjectOf(key),
       spotifyId: typeof item.spotifyId === 'string' ? item.spotifyId : null,
       title,
       artist: artistList((item.artist as string[] | string | null) ?? null),

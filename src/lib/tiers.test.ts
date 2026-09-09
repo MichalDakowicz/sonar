@@ -4,6 +4,7 @@ import type { AlbumRating, Ratings } from '@/types/album';
 function rating(albumKey: string, ratings: Ratings, review = ''): AlbumRating {
   return {
     userId: 'u',
+    subject: 'album',
     albumKey,
     spotifyId: null,
     title: albumKey,

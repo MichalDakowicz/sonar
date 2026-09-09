@@ -1,4 +1,13 @@
-import { albumKey, artistList, isSpotifyKey, spotifyIdFromKey } from './albumKey';
+import {
+  albumKey,
+  artistKey,
+  artistList,
+  isSpotifyKey,
+  songKey,
+  spotifyIdFromKey,
+  subjectIdFromKey,
+  subjectOf,
+} from './albumKey';
 
 describe('artistList', () => {
   it('keeps an array as-is, trimmed', () => {
@@ -50,5 +59,32 @@ describe('key helpers', () => {
     expect(spotifyIdFromKey('spotify:abc123')).toBe('abc123');
     expect(spotifyIdFromKey('manual:radiohead|kid-a')).toBeNull();
     expect(isSpotifyKey('spotify:abc123')).toBe(true);
+  });
+});
+
+describe('subject keys', () => {
+  it('namespaces a song and an artist away from a release', () => {
+    expect(songKey('2JiDi0qAXsPwhPqA2qaKGt')).toBe('spotify:song:2JiDi0qAXsPwhPqA2qaKGt');
+    expect(artistKey('1dfeR4HaWDbWqFHLkxsg1d')).toBe('spotify:artist:1dfeR4HaWDbWqFHLkxsg1d');
+  });
+
+  it('reads the subject back off a key', () => {
+    expect(subjectOf('spotify:song:abc')).toBe('song');
+    expect(subjectOf('spotify:artist:abc')).toBe('artist');
+    expect(subjectOf('spotify:abc')).toBe('album');
+    expect(subjectOf('manual:queen|a-night-at-the-opera')).toBe('album');
+  });
+
+  it('refuses to hand a song id to an album lookup', () => {
+    expect(spotifyIdFromKey('spotify:song:abc')).toBeNull();
+    expect(spotifyIdFromKey('spotify:artist:abc')).toBeNull();
+    expect(spotifyIdFromKey('spotify:abc')).toBe('abc');
+  });
+
+  it('reads the id of any subject', () => {
+    expect(subjectIdFromKey('spotify:song:abc')).toBe('abc');
+    expect(subjectIdFromKey('spotify:artist:abc')).toBe('abc');
+    expect(subjectIdFromKey('spotify:abc')).toBe('abc');
+    expect(subjectIdFromKey('manual:queen|kind-of-blue')).toBeNull();
   });
 });

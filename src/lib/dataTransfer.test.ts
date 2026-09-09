@@ -43,6 +43,7 @@ describe('buildExportPayload', () => {
     const rating: AlbumRating = {
       userId: 'u',
       albumKey: 'k',
+      subject: 'album',
       spotifyId: null,
       title: 'T',
       artist: [],

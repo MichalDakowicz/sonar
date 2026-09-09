@@ -129,6 +129,10 @@ create table if not exists public.album_ratings (
   release_date text,
   ratings    jsonb not null default '{}',
   review     text,
+  -- 'album' | 'song' | 'artist' — what album_key names. See the migration below
+  -- for why it exists and why it defaults.
+  subject_type text not null default 'album'
+    check (subject_type in ('album', 'song', 'artist')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   primary key (user_id, album_key)
@@ -178,10 +182,32 @@ create index if not exists album_activity_comments_activity_id_created_at_idx
   on public.album_activity_comments (activity_id, created_at);
 
 -- ============================================================================
--- INDEX MIGRATIONS — for a database created by an earlier run of this file.
--- The CREATE TABLEs above are skipped entirely once the tables exist, so
--- anything corrected afterwards has to be applied here too.
+-- COLUMN AND INDEX MIGRATIONS — for a database created by an earlier run of
+-- this file. The CREATE TABLEs above are skipped entirely once the tables
+-- exist, so anything added or corrected afterwards has to be applied here too.
 -- ============================================================================
+
+-- Ratings started out being only about releases. A song and an artist are
+-- separate opinions from the record a song sits on, so both became rateable in
+-- their own right, keyed `spotify:song:<id>` / `spotify:artist:<id>`
+-- (src/lib/albumKey.ts). The column is what lets the collection's stats stay
+-- about records while the ratings board shows everything.
+--
+-- Defaulted, so every row written before this is a release, which is what they
+-- all were.
+alter table public.album_ratings
+  add column if not exists subject_type text not null default 'album';
+
+-- ADD CONSTRAINT has no `if not exists`; swallowing duplicate_object is the
+-- idempotent form. Nothing is dropped, so a re-run on a live database is a
+-- no-op rather than a window with the check missing.
+do $$ begin
+  alter table public.album_ratings
+    add constraint album_ratings_subject_type_check
+    check (subject_type in ('album', 'song', 'artist'));
+exception
+  when duplicate_object then null;
+end $$;
 
 -- (user_id, album_key) shipped as a plain index and had to become UNIQUE: an
 -- upsert cannot name a conflict target that is not a constraint, so

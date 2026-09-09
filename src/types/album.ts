@@ -21,13 +21,25 @@ export type Ratings = {
 };
 
 /**
+ * What a rating is *about*. A song is not folded into its album and an artist is
+ * not the average of theirs: they are separate opinions, and a great single on a
+ * weak record is a normal thing to think.
+ *
+ * Only 'album' can also be owned — songs and artists are rate-only, which the
+ * FK-less ratings table already allowed for.
+ */
+export type RatingSubject = 'album' | 'song' | 'artist';
+
+/**
  * A rating, which exists independently of owning anything (public.album_ratings
- * has no FK to public.albums). `albumKey` identifies the release: 'spotify:<id>'
- * when Spotify knows it, else 'manual:<artist>|<title>' (lib/albumKey).
+ * has no FK to public.albums). `albumKey` identifies the subject: 'spotify:<id>'
+ * for a release Spotify knows, 'spotify:song:<id>', 'spotify:artist:<id>', else
+ * 'manual:<artist>|<title>' (lib/albumKey).
  */
 export type AlbumRating = {
   userId: string;
   albumKey: string;
+  subject: RatingSubject;
   spotifyId: string | null;
   title: string;
   artist: string[];

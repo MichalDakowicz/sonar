@@ -7,7 +7,7 @@ import { personalScore } from '@/lib/personalScore';
 import { isEmptyRatings } from '@/lib/ratings';
 import { stripUndefined } from '@/lib/stripUndefined';
 import { supabase } from '@/lib/supabase';
-import type { AlbumRating, Ratings } from '@/types/album';
+import type { AlbumRating, Ratings, RatingSubject } from '@/types/album';
 
 function ratingsQueryKey(userId: string | undefined) {
   return ['albumRatings', userId] as const;
@@ -26,6 +26,12 @@ async function fetchRatings(userId: string): Promise<AlbumRating[]> {
 /** What a rating needs to stand on its own, with no album row behind it. */
 export type RateTarget = {
   albumKey: string;
+  /**
+   * What is being rated. Optional and defaulting to 'album' so the dozen call
+   * sites that rate a release did not have to change, and so a target built
+   * from a stored rating carries its own subject through untouched.
+   */
+  subject?: RatingSubject;
   spotifyId?: string | null;
   title: string;
   artist?: string[];
@@ -74,6 +80,16 @@ export function useAlbumRatings() {
   const ratings = useMemo(() => query.data ?? [], [query.data]);
   const byKey = useMemo(() => new Map(ratings.map((rating) => [rating.albumKey, rating])), [ratings]);
 
+  /**
+   * Release ratings only — what the collection's stats, the shelf's top four
+   * and the profile curve are about. Songs and artists are opinions too, but
+   * they are not records on a shelf, and counting them as "albums rated" or
+   * letting one win "top rated" would make those numbers answer a different
+   * question than the one they are labelled with. The Ratings board shows
+   * every subject, with its own filter.
+   */
+  const albumRatings = useMemo(() => ratings.filter((rating) => rating.subject === 'album'), [ratings]);
+
   const ratingFor = useCallback((albumKey: string | null | undefined) => (albumKey ? byKey.get(albumKey) ?? null : null), [byKey]);
 
   const scoreFor = useCallback(
@@ -98,6 +114,7 @@ export function useAlbumRatings() {
       stripUndefined({
         user_id: user.id,
         album_key: target.albumKey,
+        subject_type: target.subject ?? 'album',
         spotify_id: target.spotifyId ?? null,
         title: target.title,
         artist: target.artist ?? [],
@@ -120,7 +137,9 @@ export function useAlbumRatings() {
         album_key: target.albumKey,
         album_title: target.title,
         type: 'rating_changed',
-        details: { rating: score },
+        // The subject rides along so the feed can say what was rated rather
+        // than calling a song an album.
+        details: { rating: score, subject: target.subject ?? 'album' },
       });
       if (activityError) console.error('Failed to log rating activity', activityError);
     }
@@ -137,6 +156,7 @@ export function useAlbumRatings() {
 
   return {
     ratings,
+    albumRatings,
     loading: query.isLoading,
     error: query.error,
     ratingFor,
@@ -160,9 +180,11 @@ export function usePublicRatings(userId: string | undefined) {
 
   const ratings = useMemo(() => query.data ?? [], [query.data]);
   const byKey = useMemo(() => new Map(ratings.map((rating) => [rating.albumKey, rating])), [ratings]);
+  const albumRatings = useMemo(() => ratings.filter((rating) => rating.subject === 'album'), [ratings]);
 
   return {
     ratings,
+    albumRatings,
     loading: query.isLoading,
     ratingFor: (albumKey: string | null | undefined) => (albumKey ? byKey.get(albumKey) ?? null : null),
   };
