@@ -1,6 +1,11 @@
 # Update notes
 
-## 2.0.1 — Unreleased
+## 2.1.0 — Unreleased
+
+### Added
+- Share a song, single, album or artist from Spotify straight into Sonar
+- The share sheet tabs between the album, its single and the artist's releases
+- Add, rate, or do both in one go from a shared link
 
 ### Changed
 - New app icon: a sonar scope sweeping a record, matching Radar and Lidar

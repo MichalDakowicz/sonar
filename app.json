@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sonar",
     "slug": "sonar",
-    "version": "2.0.1",
+    "version": "2.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sonar",
@@ -15,8 +15,15 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
+      "intentFilters": [
+        {
+          "action": "SEND",
+          "category": ["DEFAULT"],
+          "data": [{ "mimeType": "text/plain" }]
+        }
+      ],
       "package": "com.michaldakowicz.sonar",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "output": "single",

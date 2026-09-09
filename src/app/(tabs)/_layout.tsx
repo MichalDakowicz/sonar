@@ -6,6 +6,8 @@ import type { BottomSheetModal } from '@/components/ui/Sheet';
 import { QuickAddSheet } from '@/features/albums/add/QuickAddSheet';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { FriendRequestListener } from '@/features/friends/FriendRequestListener';
+import { ShareIntentListener } from '@/features/share/ShareIntentListener';
+import { ShareIntentSheet } from '@/features/share/ShareIntentSheet';
 import { StatsPeriodSheet } from '@/features/stats/StatsPeriodSheet';
 import { useQuickAddSheetStore } from '@/store/quickAddSheet';
 import { useStatsPeriodSheet } from '@/store/statsPeriod';
@@ -60,6 +62,10 @@ export default function TabsLayout() {
       </Tabs>
       <QuickAddSheet ref={quickAddRef} />
       <StatsPeriodSheet ref={periodRef} onPicked={() => periodRef.current?.dismiss()} />
+      {/* Opens itself when another app shares a Spotify link in, so it needs no
+          ref here and no nav action to reach it. */}
+      <ShareIntentSheet />
+      <ShareIntentListener />
       <FriendRequestListener />
     </>
   );
