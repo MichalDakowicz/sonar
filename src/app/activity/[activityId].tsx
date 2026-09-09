@@ -18,6 +18,7 @@ import { useActivityReactions } from '@/features/social/useActivityReactions';
 import { useNavBarSpace } from '@/hooks/useNavBarSpace';
 import { useProfile, useProfileMap } from '@/hooks/useProfile';
 import { MAX_W } from '@/hooks/useResponsive';
+import { ratingHref } from '@/lib/ratingHref';
 import { activityVerb, relativeTime, REACTIONS } from '@/lib/socialFeed';
 import { COLORS } from '@/theme/colors';
 
@@ -95,7 +96,7 @@ export default function ActivityDetail() {
                   <Pressable
                     onPress={() =>
                       event.albumKey
-                        ? router.push({ pathname: '/release/[albumKey]', params: { albumKey: event.albumKey } })
+                        ? router.push(ratingHref(event.albumKey))
                         : undefined
                     }
                     className="flex-row items-center gap-3 active:opacity-80"

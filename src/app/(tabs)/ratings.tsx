@@ -8,29 +8,32 @@ import { RatingCurve } from '@/components/stats/RatingCurve';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { SearchInput } from '@/components/ui/SearchInput';
 import type { BottomSheetModal } from '@/components/ui/Sheet';
-import { useSpotifySearch } from '@/features/albums/add/useSpotifySearch';
 import { DropSheet } from '@/features/ratings/DropSheet';
+import { RatingScopeFilter, scopeRatings, type RatingScope } from '@/features/ratings/RatingScopeFilter';
 import { RatingSearchRow, SearchSpinner } from '@/features/ratings/RatingSearchRow';
 import { TierBoard } from '@/features/ratings/TierBoard';
 import { UnratedRail } from '@/features/ratings/UnratedRail';
+import { useSubjectSearch } from '@/features/ratings/useSubjectSearch';
 import { useAlbumRatings, type RateTarget } from '@/hooks/useAlbumRatings';
 import { useAlbums } from '@/hooks/useAlbums';
 import { useNavBarSpace } from '@/hooks/useNavBarSpace';
 import { MAX_W, useIsDesktop } from '@/hooks/useResponsive';
 import { useSearchFocusRegistration } from '@/hooks/useSearchFocusRegistration';
 import { ratingDistribution } from '@/lib/ratingDistribution';
+import { candidateTarget } from '@/lib/spotifySubjects';
 import { COLORS } from '@/theme/colors';
 import { withTabReload } from '@/store/tabReload';
 
 /**
  * The ratings page: a tier list of everything you have an opinion about, and a
- * search box that will pull in any release on Spotify so you can have one.
+ * search box that will pull anything on Spotify in so you can have one.
  *
- * Nothing here touches the collection. Rating is not owning — the whole reason
- * ratings live in their own table, keyed by release with no FK to `albums`
- * (hooks/useAlbumRatings) — so a record you streamed once, a friend's copy and
- * something you sold years ago all belong on this board. This replaced a
- * discovery feed, which Spotify itself does better.
+ * "Anything" is literal — a release, one song, or an artist. Nothing here
+ * touches the collection. Rating is not owning, which is the whole reason
+ * ratings live in their own table with no FK to `albums`
+ * (hooks/useAlbumRatings) — so a record you streamed once, a friend's copy,
+ * one great single and a band you have followed for years all belong on this
+ * board. Two of those three subjects cannot be shelved at all.
  */
 export default withTabReload(RatingsScreen, 'ratings');
 
@@ -39,15 +42,19 @@ function RatingsScreen() {
   const navBarSpace = useNavBarSpace();
   const searchRef = useSearchFocusRegistration();
   const [term, setTerm] = useState('');
+  const [scope, setScope] = useState<RatingScope>('all');
   const [target, setTarget] = useState<RateTarget | null>(null);
   const dropRef = useRef<BottomSheetModal>(null);
 
   const { ratings, ratingFor } = useAlbumRatings();
   const { albums } = useAlbums();
-  const search = useSpotifySearch(term);
+  const search = useSubjectSearch(term);
   const searching = term.trim().length > 1;
 
-  const distribution = useMemo(() => ratingDistribution(ratings), [ratings]);
+  // The board and the curve read the same scoped list, so the shape of "how you
+  // rate" always describes exactly what is on screen above it.
+  const scoped = useMemo(() => scopeRatings(ratings, scope), [ratings, scope]);
+  const distribution = useMemo(() => ratingDistribution(scoped), [scoped]);
 
   const open = (next: RateTarget) => {
     setTarget(next);
@@ -68,7 +75,9 @@ function RatingsScreen() {
               ref={searchRef}
               value={term}
               onChangeText={setTerm}
-              placeholder={isDesktop ? 'Rate anything — album, artist or a link    /' : 'Rate anything — album, artist or a link'}
+              placeholder={
+                isDesktop ? 'Rate an album, song or artist — or paste a link    /' : 'Rate an album, song, artist or a link'
+              }
               placeholderTextColor={COLORS.muted}
               autoCapitalize="none"
               autoCorrect={false}
@@ -98,21 +107,12 @@ function RatingsScreen() {
               ) : search.results.length === 0 ? (
                 <EmptyState title="Nothing found" description="Check the spelling, or paste a Spotify link." />
               ) : (
-                search.results.map((release) => (
+                search.results.map((candidate) => (
                   <RatingSearchRow
-                    key={release.spotifyId}
-                    release={release}
-                    ratings={ratingFor(release.albumKey)?.ratings ?? null}
-                    onPress={() =>
-                      open({
-                        albumKey: release.albumKey,
-                        spotifyId: release.spotifyId,
-                        title: release.title,
-                        artist: release.artist,
-                        coverUrl: release.coverUrl,
-                        releaseDate: release.releaseDate,
-                      })
-                    }
+                    key={candidate.key}
+                    candidate={candidate}
+                    ratings={ratingFor(candidate.key)?.ratings ?? null}
+                    onPress={() => open(candidateTarget(candidate))}
                   />
                 ))
               )}
@@ -125,17 +125,27 @@ function RatingsScreen() {
                 <EmptyState
                   icon={<Star size={40} color={COLORS.mutedDeep} />}
                   title="Nothing rated yet"
-                  description="Search for anything you have heard — owning it is not the point — and drop it into a tier."
+                  description="Search for anything you have heard — an album, a song, an artist. Owning it is not the point."
                 />
               ) : (
                 <>
-                  <TierBoard ratings={ratings} onPick={(rating) => open(rating)} onSearch={() => searchRef.current?.focus()} />
+                  <RatingScopeFilter ratings={ratings} scope={scope} onChange={setScope} />
+                  {scoped.length === 0 ? (
+                    <EmptyState
+                      icon={<Star size={36} color={COLORS.mutedDeep} />}
+                      title="Nothing here yet"
+                      description="Nothing rated in this scope. Search above — a song or an artist can be rated without owning a thing."
+                    />
+                  ) : (
+                    <TierBoard ratings={scoped} onPick={(rating) => open(rating)} onSearch={() => searchRef.current?.focus()} />
+                  )}
                   <View className="mx-4 rounded-2xl border border-border bg-card/50 p-5">
                     <RatingCurve distribution={distribution} />
                   </View>
                   <Text className="px-4 text-[11px] text-muted-foreground">
                     A tier is read from the score, not stored beside it — so the board, the stats and a
-                    friend&apos;s view can never disagree about what you think of a record.
+                    friend&apos;s view can never disagree about what you think of a record. Stats count
+                    records only; songs and artists live here.
                   </Text>
                 </>
               )}

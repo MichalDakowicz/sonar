@@ -30,7 +30,7 @@ export type SpotifyArtist = {
 /** Which of an artist's releases to list. Spotify's own `include_groups`. */
 export type ReleaseGroup = 'album' | 'single';
 
-type RawTrack = {
+export type RawTrack = {
   id: string;
   name: string;
   duration_ms: number;
@@ -38,15 +38,15 @@ type RawTrack = {
   artists: { id: string; name: string }[];
 };
 
-type RawArtist = {
+export type RawArtist = {
   id: string;
   name: string;
   images?: { url: string }[];
   genres?: string[];
 };
 
-export async function fetchTrack(id: string): Promise<SpotifyTrackDetail> {
-  const raw = await spotifyGet<RawTrack>(`/tracks/${id}`);
+/** Read boundary for a track. Exported: search returns these shapes too. */
+export function toTrack(raw: RawTrack): SpotifyTrackDetail {
   return {
     id: raw.id,
     name: raw.name,
@@ -57,8 +57,8 @@ export async function fetchTrack(id: string): Promise<SpotifyTrackDetail> {
   };
 }
 
-export async function fetchArtist(id: string): Promise<SpotifyArtist> {
-  const raw = await spotifyGet<RawArtist>(`/artists/${id}`);
+/** Read boundary for an artist, for the same reason. */
+export function toArtist(raw: RawArtist): SpotifyArtist {
   return {
     id: raw.id,
     name: raw.name,
@@ -66,6 +66,14 @@ export async function fetchArtist(id: string): Promise<SpotifyArtist> {
     imageUrl: raw.images?.[0]?.url ?? null,
     genres: raw.genres ?? [],
   };
+}
+
+export async function fetchTrack(id: string): Promise<SpotifyTrackDetail> {
+  return toTrack(await spotifyGet<RawTrack>(`/tracks/${id}`));
+}
+
+export async function fetchArtist(id: string): Promise<SpotifyArtist> {
+  return toArtist(await spotifyGet<RawArtist>(`/artists/${id}`));
 }
 
 /**

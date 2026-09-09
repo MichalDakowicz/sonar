@@ -5,7 +5,7 @@ import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-nativ
 import { useToast } from '@/components/ui/Toast';
 import { RatingSlider, RatingSliderPrecise, RatingValue } from '@/features/ratings/RatingSlider';
 import { useAlbumRatings, type RateTarget } from '@/hooks/useAlbumRatings';
-import { FACETS, recalcOverall, toFacetValues, toRatingsPayload, type FacetValues } from '@/lib/ratings';
+import { facetsFor, recalcOverall, toFacetValues, toRatingsPayload, type FacetValues } from '@/lib/ratings';
 import { COLORS } from '@/theme/colors';
 
 type RatingEditorProps = {
@@ -16,12 +16,13 @@ type RatingEditorProps = {
 };
 
 /**
- * Rate a release, owned or not.
+ * Rate anything — a release owned or not, one song, or an artist.
  *
  * This is the piece Sonar did not have before: because ratings live in their
- * own table keyed by release (see hooks/useAlbumRatings), the same editor works
- * on a record on your shelf, a friend's copy, and a search result you have only
- * ever streamed. Nothing here asks whether you own it.
+ * own table keyed by subject (see hooks/useAlbumRatings), the same editor works
+ * on a record on your shelf, a friend's copy, a search result you have only
+ * ever streamed, a single track, and a whole discography. Nothing here asks
+ * whether you own it, and for two of the three subjects you cannot.
  *
  * Four facets at half-star steps, plus an overall score that can be dragged to
  * a tenth or auto-filled from the facets — the same shape Radar rates films in.
@@ -30,6 +31,9 @@ export function RatingEditor({ target, note }: RatingEditorProps) {
   const { ratingFor, saveRating, removeRating } = useAlbumRatings();
   const { show } = useToast();
   const existing = ratingFor(target.albumKey);
+  // Same four keys for every subject, different questions — a song's take and
+  // an artist's whole catalogue are not asked about the same way (lib/ratings).
+  const facetList = facetsFor(target.subject ?? 'album');
 
   // A draft, not a copy: null means "nothing edited yet", so what is on screen
   // is whatever the stored rating says — including when it arrives after first
@@ -109,7 +113,7 @@ export function RatingEditor({ target, note }: RatingEditorProps) {
       </View>
 
       <View className="gap-4">
-        {FACETS.map((facet) => (
+        {facetList.map((facet) => (
           <View key={facet.key} className="gap-2">
             <View className="flex-row items-center justify-between">
               <View>

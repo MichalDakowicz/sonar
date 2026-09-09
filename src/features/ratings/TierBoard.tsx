@@ -1,11 +1,9 @@
-import { Image } from 'expo-image';
-import { Disc3 } from 'lucide-react-native';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
+import { SubjectArtwork } from '@/features/ratings/SubjectArtwork';
 import { personalScore } from '@/lib/personalScore';
 import { groupByTier, type TierRow } from '@/lib/tiers';
 import { artistsToDisplayString } from '@/lib/utils';
-import { COLORS } from '@/theme/colors';
 import type { AlbumRating } from '@/types/album';
 
 const COVER = 84;
@@ -19,8 +17,9 @@ type TierBoardProps = {
 };
 
 /**
- * The tier list: one row per band, every rated release sitting in the row its
- * score puts it in.
+ * The tier list: one row per band, everything you have rated sitting in the row
+ * its score puts it in — releases, songs and artists alike, each drawn so you
+ * can tell which is which (features/ratings/SubjectArtwork).
  *
  * A row is a horizontal scroller rather than a wrap, so a lopsided board (nine
  * albums in A, one in D) keeps every row the same height and the letters stay
@@ -77,23 +76,10 @@ function Cover({ rating, onPress }: { rating: AlbumRating; onPress: () => void }
 
   return (
     <Pressable onPress={onPress} className="active:opacity-70" style={{ width: COVER }}>
-      <View className="overflow-hidden rounded-md bg-neutral-900" style={{ width: COVER, height: COVER }}>
-        {rating.coverUrl ? (
-          <Image
-            source={{ uri: rating.coverUrl }}
-            style={{ width: COVER, height: COVER }}
-            contentFit="cover"
-            transition={120}
-            cachePolicy="memory-disk"
-            recyclingKey={rating.coverUrl}
-          />
-        ) : (
-          <View className="h-full w-full items-center justify-center">
-            <Disc3 size={24} color={COLORS.mutedDeep} />
-          </View>
-        )}
+      <View style={{ width: COVER, height: COVER }}>
+        <SubjectArtwork subject={rating.subject} uri={rating.coverUrl} size={COVER} />
         {score != null && (
-          <View className="absolute bottom-0 right-0 rounded-tl bg-black/75 px-1">
+          <View className="absolute bottom-0 left-0 rounded-tr bg-black/75 px-1">
             <Text className="text-[10px] font-bold text-amber-400">{score.toFixed(1)}</Text>
           </View>
         )}

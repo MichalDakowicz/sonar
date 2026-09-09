@@ -89,7 +89,11 @@ export function activityVerb(event: MinimalEvent): string {
       return 'spun';
     case 'rating_changed': {
       const rating = details.rating;
-      return typeof rating === 'number' ? `rated it ${formatScore(rating)}` : 'rated it';
+      // 'it' is right for a record, wrong for the other two subjects: a friend
+      // scoring one track off an album did not score the album.
+      const subject = stringOf(details, 'subject');
+      const what = subject === 'song' ? 'the song' : subject === 'artist' ? 'the artist' : 'it';
+      return typeof rating === 'number' ? `rated ${what} ${formatScore(rating)}` : `rated ${what}`;
     }
     case 'format_added': {
       const format = stringOf(details, 'format');

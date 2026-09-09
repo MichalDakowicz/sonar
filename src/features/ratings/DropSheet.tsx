@@ -1,13 +1,14 @@
-import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import { Disc3, ExternalLink, Trash2 } from 'lucide-react-native';
+import { ExternalLink, Trash2 } from 'lucide-react-native';
 import { forwardRef } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 import { Sheet, type BottomSheetModal } from '@/components/ui/Sheet';
 import { useToast } from '@/components/ui/Toast';
+import { SubjectArtwork } from '@/features/ratings/SubjectArtwork';
 import { useAlbumRatings, type RateTarget } from '@/hooks/useAlbumRatings';
 import { personalScore } from '@/lib/personalScore';
+import { ratingHref } from '@/lib/ratingHref';
 import { scoreForTier, tierFor, TIERS } from '@/lib/tiers';
 import { artistsToDisplayString, releaseYear } from '@/lib/utils';
 import { COLORS } from '@/theme/colors';
@@ -19,12 +20,12 @@ type DropSheetProps = {
 };
 
 /**
- * Drop a release into a tier, in one tap.
+ * Drop anything rateable into a tier, in one tap.
  *
  * This is the fast path: a tier writes a score (lib/tiers) and nothing else, so
  * rating a stack of albums is six visible buttons rather than six sliders. The
- * facets and the review live on the release page, one tap further in, for when
- * a record deserves the long version.
+ * facets and the review live one tap further in — on the release page for a
+ * record, on the rate page for a song or an artist (lib/ratingHref).
  */
 export const DropSheet = forwardRef<BottomSheetModal, DropSheetProps>(function DropSheet(
   { target, onDismiss },
@@ -60,15 +61,7 @@ export const DropSheet = forwardRef<BottomSheetModal, DropSheetProps>(function D
         ) : (
           <>
             <View className="flex-row items-center gap-3">
-              <View className="h-16 w-16 overflow-hidden rounded-md bg-secondary">
-                {target.coverUrl ? (
-                  <Image source={{ uri: target.coverUrl }} style={{ width: 64, height: 64 }} contentFit="cover" transition={120} />
-                ) : (
-                  <View className="h-full w-full items-center justify-center">
-                    <Disc3 size={22} color={COLORS.mutedDeep} />
-                  </View>
-                )}
-              </View>
+              <SubjectArtwork subject={target.subject ?? 'album'} uri={target.coverUrl ?? null} size={64} />
               <View className="min-w-0 flex-1">
                 <Text numberOfLines={2} className="text-base font-bold text-foreground">
                   {target.title}
@@ -115,7 +108,7 @@ export const DropSheet = forwardRef<BottomSheetModal, DropSheetProps>(function D
               <Pressable
                 onPress={() => {
                   dismiss();
-                  router.push({ pathname: '/release/[albumKey]', params: { albumKey: target.albumKey } });
+                  router.push(ratingHref(target.albumKey));
                 }}
                 className="flex-row items-center justify-center gap-2 rounded-full border border-border py-3 active:opacity-80"
               >

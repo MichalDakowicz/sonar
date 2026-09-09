@@ -23,7 +23,7 @@ function StatsScreen() {
   const router = useRouter();
   const { albums, loading, error } = useAlbums();
   const { spins } = useSpins();
-  const { ratings, ratingFor } = useAlbumRatings();
+  const { albumRatings, ratingFor } = useAlbumRatings();
   const period = useStatsPeriod((s) => s.period);
   const presentPeriod = useStatsPeriodSheet((s) => s.present);
 
@@ -51,7 +51,7 @@ function StatsScreen() {
         <StatsView
           albums={albums}
           spins={spins}
-          ratings={ratings}
+          ratings={albumRatings}
           period={period}
           ratingsFor={(album: Album) => ratingFor(album.albumKey)?.ratings ?? null}
           onOpenAlbum={(album) => router.push({ pathname: '/album/[albumId]', params: { albumId: album.id } })}

@@ -49,7 +49,7 @@ function ProfileScreen() {
   const { profile } = useProfile(user?.id);
   const { albums, loading, error } = useAlbums();
   const { spins, logSpin } = useSpins();
-  const { ratings, ratingFor } = useAlbumRatings();
+  const { albumRatings, ratingFor } = useAlbumRatings();
   const navBarSpace = useNavBarSpace();
 
   const editProfileRef = useRef<BottomSheetModal>(null);
@@ -58,11 +58,11 @@ function ProfileScreen() {
   // sheet, and the counter is what makes the second press a new value.
   const [pickRequest, setPickRequest] = useState<{ scope: 'collection' | 'neglected'; nonce: number } | null>(null);
 
-  const stats = useMemo(() => shelfStats(albums, ratings), [albums, ratings]);
+  const stats = useMemo(() => shelfStats(albums, albumRatings), [albums, albumRatings]);
   const recent = useMemo(() => recentlyAdded(albums), [albums]);
   const playing = useMemo(() => nowPlaying(albums, spins), [albums, spins]);
-  const best = useMemo(() => topRated(albums, ratings), [albums, ratings]);
-  const distribution = useMemo(() => ratingDistribution(ratings), [ratings]);
+  const best = useMemo(() => topRated(albums, albumRatings), [albums, albumRatings]);
+  const distribution = useMemo(() => ratingDistribution(albumRatings), [albumRatings]);
 
   // Read once, on mount, rather than on every render: "neglected" is a cutoff,
   // and a clock read during render would make the list impure and re-derive it

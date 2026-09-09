@@ -11,6 +11,7 @@ import { useCommentCounts } from '@/features/social/useActivityComments';
 import { useActivityReactions } from '@/features/social/useActivityReactions';
 import { useNavBarSpace } from '@/hooks/useNavBarSpace';
 import { useProfileMap } from '@/hooks/useProfile';
+import { ratingHref } from '@/lib/ratingHref';
 import { feedKind, FEED_FILTERS, freshCountsSince, matchesFeedFilter, type FeedFilter } from '@/lib/socialFeed';
 import { COLORS } from '@/theme/colors';
 import type { AlbumActivityEvent, Profile } from '@/types/album';
@@ -136,7 +137,7 @@ export function FeedView({ me, friends, events, loading, since, coverFor, selfId
               onOpenThread={() => router.push({ pathname: '/activity/[activityId]', params: { activityId: event.id } })}
               onOpenAlbum={() =>
                 event.albumKey
-                  ? router.push({ pathname: '/release/[albumKey]', params: { albumKey: event.albumKey } })
+                  ? router.push(ratingHref(event.albumKey))
                   : undefined
               }
               onOpenProfile={() => router.push({ pathname: '/u/[userId]', params: { userId: event.userId } })}

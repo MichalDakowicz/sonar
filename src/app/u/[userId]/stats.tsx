@@ -24,7 +24,7 @@ export default function PublicStats() {
   const { canView, loading: viewLoading } = useCanViewUser(userId);
   const { albums, loading } = usePublicAlbums(canView ? userId : undefined);
   const { spins } = usePublicSpins(canView ? userId : undefined);
-  const { ratings, ratingFor } = usePublicRatings(canView ? userId : undefined);
+  const { albumRatings, ratingFor } = usePublicRatings(canView ? userId : undefined);
 
   if (viewLoading || (canView && loading)) {
     return (
@@ -52,7 +52,7 @@ export default function PublicStats() {
         <StatsView
           albums={albums}
           spins={spins}
-          ratings={ratings}
+          ratings={albumRatings}
           period="all"
           ratingsFor={(album) => ratingFor(album.albumKey)?.ratings ?? null}
         />
