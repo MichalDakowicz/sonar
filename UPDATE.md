@@ -4,8 +4,12 @@
 
 ### Added
 - Share a song, single, album or artist from Spotify straight into Sonar
-- The share sheet tabs between the album, its single and the artist's releases
+- The share sheet tabs between the song, its release, the artist and their catalogue
 - Add, rate, or do both in one go from a shared link
+- Rate a single song, separately from the record it came off
+- Rate an artist on their whole body of work
+- Ratings search finds songs and artists, not just albums
+- Filter the tier board by albums, songs or artists
 
 ### Changed
 - New app icon: a sonar scope sweeping a record, matching Radar and Lidar

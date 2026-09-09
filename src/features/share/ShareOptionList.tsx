@@ -1,32 +1,31 @@
 import { Check, Disc3, Star } from 'lucide-react-native';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
-import { CoverImage } from '@/components/media/CoverImage';
 import { EmptyState } from '@/components/ui/EmptyState';
-import type { SpotifyAlbum } from '@/lib/spotify';
-import { artistsToDisplayString, releaseYear } from '@/lib/utils';
+import { SubjectArtwork } from '@/features/ratings/SubjectArtwork';
+import type { ShareOption } from '@/features/share/useShareOptions';
+import { candidateByline } from '@/lib/spotifySubjects';
 import { COLORS } from '@/theme/colors';
 
-type ShareReleaseListProps = {
-  options: SpotifyAlbum[];
+type ShareOptionListProps = {
+  options: ShareOption[];
   loading: boolean;
   selectedKey: string | null;
-  onSelect: (release: SpotifyAlbum) => void;
-  isAdded: (albumKey: string) => boolean;
-  scoreFor: (albumKey: string) => number | null;
+  onSelect: (option: ShareOption) => void;
+  isAdded: (key: string) => boolean;
+  scoreFor: (key: string) => number | null;
   emptyTitle: string;
   emptyDescription: string;
 };
 
 /**
- * The releases the active tab offers, one of which is what the Add/Rate buttons
- * below will act on.
+ * What the active tab offers, one of which the buttons below will act on.
  *
  * A row says whether it is already on the shelf and whether it is already
- * rated, because that is what decides which of the three actions you want — the
- * whole point of the sheet is not having to open the app to find out.
+ * rated, because that is what decides which action you want — the whole point
+ * of the sheet is not having to open the app first to find out.
  */
-export function ShareReleaseList({
+export function ShareOptionList({
   options,
   loading,
   selectedKey,
@@ -35,7 +34,7 @@ export function ShareReleaseList({
   scoreFor,
   emptyTitle,
   emptyDescription,
-}: ShareReleaseListProps) {
+}: ShareOptionListProps) {
   if (loading && options.length === 0) {
     return (
       <View className="items-center py-10">
@@ -50,14 +49,16 @@ export function ShareReleaseList({
 
   return (
     <View className="gap-2">
-      {options.map((release) => {
-        const selected = release.albumKey === selectedKey;
-        const added = isAdded(release.albumKey);
-        const score = scoreFor(release.albumKey);
+      {options.map((option) => {
+        const { candidate } = option;
+        const selected = candidate.key === selectedKey;
+        const added = isAdded(candidate.key);
+        const score = scoreFor(candidate.key);
+        const byline = candidateByline(candidate);
         return (
           <Pressable
-            key={release.spotifyId}
-            onPress={() => onSelect(release)}
+            key={candidate.key}
+            onPress={() => onSelect(option)}
             accessibilityRole="radio"
             accessibilityState={{ selected }}
             className="flex-row items-center gap-3 rounded-xl border bg-card p-2.5 active:opacity-80"
@@ -66,16 +67,14 @@ export function ShareReleaseList({
               backgroundColor: selected ? COLORS.accentSoft : undefined,
             }}
           >
-            <View className="h-14 w-14 overflow-hidden rounded-md bg-secondary">
-              <CoverImage uri={release.coverUrl} iconSize={20} transitionMs={120} />
-            </View>
+            <SubjectArtwork subject={candidate.subject} uri={candidate.coverUrl} size={56} />
 
             <View className="min-w-0 flex-1">
               <Text numberOfLines={1} className="text-sm font-bold text-foreground">
-                {release.title}
+                {candidate.title}
               </Text>
               <Text numberOfLines={1} className="text-xs text-muted-foreground">
-                {[artistsToDisplayString(release.artist), releaseYear(release.releaseDate)].filter(Boolean).join(' • ')}
+                {[byline, candidate.context].filter(Boolean).join(' • ')}
               </Text>
             </View>
 

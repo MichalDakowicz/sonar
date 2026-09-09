@@ -3,58 +3,88 @@ import { useQuery } from '@tanstack/react-query';
 import type { ShareResolution, ShareTabKind } from '@/features/share/useShareResolution';
 import { singlesForTrack } from '@/lib/releaseMatch';
 import { isSpotifyConfigured, type SpotifyAlbum } from '@/lib/spotify';
-import { fetchArtistReleases, type ReleaseGroup } from '@/lib/spotifyLookup';
+import { fetchArtist, fetchArtistReleases, type ReleaseGroup } from '@/lib/spotifyLookup';
+import { albumCandidate, artistCandidate, songCandidate, type RatingCandidate } from '@/lib/spotifySubjects';
 
 /**
- * The releases one tab offers.
+ * One thing a tab offers.
  *
- * Every tab answers with the same shape — a list of releases — so the sheet's
- * body and its Add/Rate buttons are written once, whether the tab holds the one
- * album that was shared or forty singles by its artist.
+ * `album` is what separates the two halves of the sheet: a release can be put
+ * on a shelf, and a song or an artist can only be rated. Carrying the release
+ * alongside the candidate means the Add path still gets the full Spotify album
+ * it needs to write a row, without the candidate type having to grow a
+ * shelf-shaped field that is null two thirds of the time.
+ */
+export type ShareOption = {
+  candidate: RatingCandidate;
+  album: SpotifyAlbum | null;
+};
+
+const releaseOption = (album: SpotifyAlbum): ShareOption => ({ candidate: albumCandidate(album), album });
+
+/**
+ * The options one tab offers.
  *
- * The two singles tabs share a query key with each other on purpose: hunting a
- * song's 7" and listing an artist's singles hit the same endpoint, so opening
- * one warms the other.
+ * Every tab answers with the same shape, so the sheet's list and its action
+ * buttons are written once — whether the tab holds the song that was shared or
+ * forty singles by its artist.
+ *
+ * The two release tabs share a query key with each other by group, so opening
+ * Singles after the song tab has already looked them up costs nothing.
  */
 export function useShareOptions(resolution: ShareResolution, kind: ShareTabKind | null) {
   const subject = resolution.subject;
   const artistId = subject?.artistId ?? null;
-  const trackName = subject?.trackName ?? null;
+  const track = subject?.track ?? null;
   const parent = subject?.parent ?? null;
 
-  // A shared single is already the release; only a song has to go looking.
-  const huntingSingle = kind === 'single' && parent?.albumType !== 'single';
   const group: ReleaseGroup | null =
-    kind === 'artistAlbums' ? 'album' : kind === 'artistSingles' || huntingSingle ? 'single' : null;
+    kind === 'artistAlbums' ? 'album' : kind === 'artistSingles' ? 'single' : null;
 
-  const query = useQuery({
+  const releases = useQuery({
     queryKey: ['artistReleases', artistId, group],
     queryFn: () => fetchArtistReleases(artistId!, group!),
     enabled: !!artistId && !!group && isSpotifyConfigured(),
     staleTime: 60 * 60 * 1000,
   });
 
-  const releases = query.data ?? [];
-  const options = pickOptions(kind, parent, trackName, releases);
+  // Only fetched when the artist tab is opened on a share that did not name an
+  // artist directly — a shared song knows the id but not the picture.
+  const needsArtist = kind === 'artist' && !subject?.artist && !!artistId;
+  const artist = useQuery({
+    queryKey: ['artist', artistId],
+    queryFn: () => fetchArtist(artistId!),
+    enabled: needsArtist && isSpotifyConfigured(),
+    staleTime: 24 * 60 * 60 * 1000,
+  });
 
-  return {
-    options,
-    loading: !!group && query.isFetching,
-    error: query.error,
-  };
+  const options = pick();
+  const loading = (!!group && releases.isFetching) || (needsArtist && artist.isFetching);
+
+  function pick(): ShareOption[] {
+    if (kind === 'song') return track ? [{ candidate: songCandidate(track), album: null }] : [];
+
+    if (kind === 'album') return parent ? [releaseOption(parent)] : [];
+
+    if (kind === 'artist') {
+      const resolved = subject?.artist ?? artist.data ?? null;
+      return resolved ? [{ candidate: artistCandidate(resolved), album: null }] : [];
+    }
+
+    const list = releases.data ?? [];
+    // On the singles tab, lead with the pressing of the song that was shared —
+    // it is the one the user is most likely to be holding.
+    const ordered =
+      kind === 'artistSingles' && track ? withSinglesFirst(list, track.name) : list;
+    return ordered.map(releaseOption);
+  }
+
+  return { options, loading, error: releases.error ?? artist.error };
 }
 
-function pickOptions(
-  kind: ShareTabKind | null,
-  parent: SpotifyAlbum | null,
-  trackName: string | null,
-  releases: SpotifyAlbum[],
-): SpotifyAlbum[] {
-  if (!kind) return [];
-  if (kind === 'album') return parent ? [parent] : [];
-  if (kind === 'single') {
-    if (parent?.albumType === 'single') return [parent];
-    return trackName ? singlesForTrack(releases, trackName) : [];
-  }
-  return releases;
+function withSinglesFirst(releases: SpotifyAlbum[], trackName: string): SpotifyAlbum[] {
+  const matches = singlesForTrack(releases, trackName);
+  if (matches.length === 0) return releases;
+  const matched = new Set(matches.map((release) => release.spotifyId));
+  return [...matches, ...releases.filter((release) => !matched.has(release.spotifyId))];
 }
