@@ -2,6 +2,10 @@
 
 ## 2.1.1 — Unreleased
 
+### Changed
+- Sign-in screen names Pulsar too, so all four apps point at the one account
+- Collection rows drop the coloured rule down their left edge
+
 ## 2.1.0 — 2026-09-09
 
 ### Added
