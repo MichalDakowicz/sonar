@@ -65,10 +65,11 @@ export default function Login() {
             </View>
             <Text className="text-4xl font-bold tracking-tight text-foreground">Sonar</Text>
             <Text className="text-center text-muted-foreground">Curate your physical &amp; digital collection.</Text>
-            {/* Worth saying up front: the three apps share one account, and
+            {/* Worth saying up front: the four apps share one account, and
                 someone who already has one should not create a second. */}
             <Text className="pt-1 text-center text-xs text-muted-foreground/70">
-              Same account as Radar and Lidar — sign in with it and your profile and friends come with you.
+              Same account as Radar, Lidar and Pulsar — sign in with it and your profile and friends come
+              with you.
             </Text>
           </View>
 
