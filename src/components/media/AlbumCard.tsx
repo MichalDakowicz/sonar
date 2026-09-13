@@ -170,8 +170,8 @@ function RowCard({ album, ratings, onPress, onLogSpin, highlighted = false, read
       onPress={() => onPress?.(album)}
       style={[{ cursor: 'pointer' }, webTransition('background-color'), hovered ? { backgroundColor: 'hsl(0 0% 16%)' } : null]}
       className={cn(
-        'flex-row items-center gap-3 rounded-xl border-l-4 p-3',
-        highlighted ? 'border-l-primary bg-neutral-800' : 'border-l-transparent bg-neutral-900',
+        'flex-row items-center gap-3 rounded-xl p-3',
+        highlighted ? 'bg-neutral-800' : 'bg-neutral-900',
       )}
     >
       <View className="h-16 w-16 overflow-hidden rounded-md bg-neutral-800">
