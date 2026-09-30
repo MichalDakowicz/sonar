@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Modal, Pressable, Text, View } from 'react-native';
 
 type ConfirmDialogProps = {
@@ -9,6 +10,8 @@ type ConfirmDialogProps = {
   loading?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
+  /** Sits between the description and the buttons — a choice the confirm depends on. */
+  children?: ReactNode;
 };
 
 // Shared confirm modal (e.g. "Remove from library") - a plain RN Modal since
@@ -22,6 +25,7 @@ export function ConfirmDialog({
   loading,
   onConfirm,
   onCancel,
+  children,
 }: ConfirmDialogProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
@@ -29,6 +33,7 @@ export function ConfirmDialog({
         <View className="w-full max-w-sm gap-4 rounded-2xl border border-border bg-card p-5">
           <Text className="text-lg font-bold text-card-foreground">{title}</Text>
           {!!description && <Text className="text-sm text-muted-foreground">{description}</Text>}
+          {children}
           <View className="flex-row justify-end gap-3 pt-1">
             <Pressable onPress={onCancel} className="rounded-full px-4 py-2">
               <Text className="font-medium text-foreground">Cancel</Text>

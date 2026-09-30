@@ -1,13 +1,14 @@
 # Update notes
 
-## 2.1.1 — Unreleased
+## 2.2.0 — Unreleased
 
 ### Added
-
+- Sign-in screen can continue with a Ping app already signed in on this phone
 - Android: a new-version notice shows release notes and remembers Later for that version
 - Settings: check for updates and download the latest Android build from About
 
 ### Changed
+- Settings: signing out asks whether to leave just Sonar or every Ping app
 - Sign-in screen names Pulsar too, so all four apps point at the one account
 - Collection rows drop the coloured rule down their left edge
 
