@@ -71,7 +71,9 @@ prebuild output, so its `versionName`/`versionCode` are regenerated, never hand-
   Unreleased` section in `UPDATE.md`, and keep working under that same version.
 - Bump `expo.android.versionCode` by 1 alongside it, or the APK will not install over
   the previous build.
-- `APP_VERSION` in `src/app/settings.tsx` is shown in the About section; keep it in step.
+- About in Settings reads the installed version through `src/lib/appUpdate.ts`.
+- The Android notice and Settings check compare this app's GitHub release tag
+  `v<version>` with `expo.version`; keep release tags and config in step.
 
 ## 5. Update notes — write as work lands
 
@@ -166,8 +168,7 @@ npm run deploy:web        # = expo export -p web --output-dir dist --clear && fi
 ## Release checklist (when the user asks to release)
 
 1. `UPDATE.md`: top heading `— Unreleased` → `— YYYY-MM-DD`.
-2. `app.json`: `expo.version` matches, `versionCode` bumped; `APP_VERSION` in
-   `src/app/settings.tsx` matches.
+2. `app.json`: `expo.version` matches, `versionCode` bumped; About reads the same config.
 3. Build the release APK, name it `sonar-v<version>.apk`.
 4. `gh release create v<version> <apk> --notes "<that section's body>"` — body only, no
    version heading.

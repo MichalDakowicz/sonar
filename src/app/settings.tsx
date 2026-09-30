@@ -6,6 +6,7 @@ import { ContentShell } from '@/components/layout/ContentShell';
 import { NavIslands } from '@/components/layout/NavIslands';
 import type { BottomSheetModal } from '@/components/ui/Sheet';
 import { signOut } from '@/features/auth/authActions';
+import { AppUpdateControl } from '@/features/settings/AppUpdateControl';
 import { CardSizeControl } from '@/features/settings/CardSizeControl';
 import { DataTools } from '@/features/settings/DataTools';
 import { ImportExportSheet } from '@/features/settings/ImportExportSheet';
@@ -18,7 +19,6 @@ import { MAX_W, useCenteredContentStyle } from '@/hooks/useResponsive';
 import { COLORS } from '@/theme/colors';
 
 const MUTED = COLORS.muted;
-const APP_VERSION = '2.1.1';
 
 /**
  * App preferences, pushed from the gear on the Profile tab rather than owning a
@@ -61,7 +61,7 @@ export default function Settings() {
 
           <SettingsSection icon={<Info size={18} color={MUTED} />} title="About">
             <View className="gap-1">
-              <Text className="text-sm text-foreground">Sonar {APP_VERSION}</Text>
+              <AppUpdateControl />
               <Text className="text-xs text-muted-foreground">
                 Runs on the same Supabase project as Radar — one account, one profile, one friend list.
               </Text>
