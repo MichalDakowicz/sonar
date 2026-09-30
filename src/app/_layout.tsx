@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NAV_DESTINATIONS } from '@/components/layout/navDestinations';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
+import { UpdateNotice } from '@/features/updates/UpdateNotice';
 import { useWebShortcuts } from '@/hooks/useWebShortcuts';
 import { queryClient } from '@/lib/queryClient';
 import { ThemeProvider } from '@/theme/ThemeProvider';
@@ -46,7 +47,12 @@ function AppShell({ children }: { children: React.ReactNode }) {
   );
   useWebShortcuts({ onSelectTab: selectTab });
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <UpdateNotice />
+    </>
+  );
 }
 
 export default function RootLayout() {
