@@ -7,6 +7,7 @@
 // target - that keeps the optical size identical across icons even if the SVG's
 // internal padding changes later.
 
+import { Buffer } from 'node:buffer';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -38,6 +39,8 @@ const TARGETS = [
   { file: 'android-icon-foreground.png', size: 1024, scale: 0.478 },
   { file: 'android-icon-monochrome.png', size: 1024, scale: 0.478, mono: '#FFFFFF' },
   { file: 'android-icon-background.png', size: 1024, solid: BACKGROUND },
+  // Notifications have no launcher mask, so the white mark can fill the canvas.
+  { file: 'notification-icon.png', size: 96, scale: 0.94, mono: '#FFFFFF' },
 ];
 
 async function trimmedMark(mono) {
