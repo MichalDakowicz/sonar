@@ -120,10 +120,12 @@ npx expo prebuild -p android          # only when app.json / native config / dep
 cd android; ./gradlew assembleRelease
 mv app/build/outputs/apk/release/app-release.apk \
    app/build/outputs/apk/release/sonar-v<version>.apk
-adb install -r app/build/outputs/apk/release/sonar-v<version>.apk
+adb install --no-streaming --user 0 -r app/build/outputs/apk/release/sonar-v<version>.apk
 ```
 
-Release builds are signed with the debug keystore, so `adb install -r` upgrades in place.
+Release builds are signed with the debug keystore, so replacement installs upgrade in place.
+On this phone, installs without `--user 0` stayed pending after transfer, even unlocked.
+Target profile 0 and use `--no-streaming`; this completed all four updates on 2026-09-30.
 
 **Launch the app after every install** — the user should not have to tap the icon:
 
