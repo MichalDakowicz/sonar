@@ -6,6 +6,7 @@
 - Sign-in screen can continue with a Ping app already signed in on this phone
 
 ### Changed
+- Settings: signing out asks whether to leave just Sonar or every Ping app
 - Sign-in screen names Pulsar too, so all four apps point at the one account
 - Collection rows drop the coloured rule down their left edge
 

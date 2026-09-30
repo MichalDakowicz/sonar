@@ -46,7 +46,14 @@ export async function signUpWithEmail(email: string, password: string) {
   if (error) throw error;
 }
 
-export async function signOut() {
-  const { error } = await supabase.auth.signOut();
+/**
+ * `local` ends Sonar's session only. `global` ends every session the account
+ * has — every Ping app, on every device and on the web. The scope is always
+ * explicit because supabase-js defaults to `global`.
+ */
+export type SignOutScope = 'local' | 'global';
+
+export async function signOut(scope: SignOutScope) {
+  const { error } = await supabase.auth.signOut({ scope });
   if (error) throw error;
 }
