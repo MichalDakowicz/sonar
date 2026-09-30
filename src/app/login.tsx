@@ -18,6 +18,9 @@ import Logo from '@/assets/brand/logo.svg';
 import { useToast } from '@/components/ui/Toast';
 import { signInWithEmail, signInWithGoogle, signUpWithEmail } from '@/features/auth/authActions';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { SiblingSignIn } from '@/features/auth/SiblingSignIn';
+import { requestSiblingSignIn } from '@/features/auth/siblingHandoff';
+import { useInstalledSiblings } from '@/features/auth/useInstalledSiblings';
 import { MAX_W, useIsDesktop } from '@/hooks/useResponsive';
 import { COLORS } from '@/theme/colors';
 
@@ -29,6 +32,7 @@ export default function Login() {
   const [mode, setMode] = useState<'signIn' | 'signUp'>('signIn');
   const [busy, setBusy] = useState(false);
   const isDesktop = useIsDesktop();
+  const siblings = useInstalledSiblings();
 
   // `as Href`: expo-router's generated route union is unstable for the
   // transparent (tabs) group across typegen runs — "/" always resolves
@@ -79,6 +83,12 @@ export default function Login() {
             className={isDesktop ? 'w-full gap-3 rounded-2xl border border-border bg-card p-8' : 'w-full gap-3'}
             style={{ maxWidth: MAX_W.form }}
           >
+            <SiblingSignIn
+              siblings={siblings}
+              disabled={busy}
+              onPick={(app) => runAction(() => requestSiblingSignIn(app))}
+            />
+
             <Pressable
               onPress={() => runAction(signInWithGoogle)}
               disabled={busy}

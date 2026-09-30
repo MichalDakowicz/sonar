@@ -105,3 +105,18 @@ a JSON export into the shared project — it needs an explicit
 guessing would file someone else's records under your account. It is idempotent: albums
 and ratings upsert on `(user_id, album_key)`, spins skip anything already stored at the
 same instant.
+
+## Signing in from a sibling
+
+No table and no column, but one dependency on Radar. When another Ping app on the phone
+signs Sonar in (`PING.md` §9.13), the one-time token it hands over is minted by Radar's
+`sign-in-handoff` edge function (`radar/supabase/functions/sign-in-handoff`) — and when
+Sonar is the one giving, it calls that same function. Sonar redeems the token through
+`auth.verifyOtp` into a session of its own, so nothing is shared at rest.
+
+If the function is not deployed, every handoff answers "failed" and the login screen says
+so; email and Google sign-in are untouched. Deploying it is the only setup.
+
+Sign-out passes its scope explicitly. "Every Ping app" is `signOut({ scope: 'global' })`:
+it ends every session the account has, on every device and on the web, which is what
+supabase-js did by default before the choice existed.
