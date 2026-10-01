@@ -67,7 +67,7 @@ describe('the family', () => {
 });
 
 describe('signing certificates', () => {
-  // What keytool and apksigner print for the stock template debug keystore.
+  // What keytool prints for the stock debug keystore Expo prebuild ships — public.
   const TEMPLATE_DEBUG = 'FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C';
 
   it('pins every app to at least one well-formed SHA-256', () => {
@@ -77,11 +77,19 @@ describe('signing certificates', () => {
     }
   });
 
-  // The template key is public, so pinning it vouches for nothing. Radar has a private
-  // one; sliding it back to the template would quietly undo the only strong pin.
-  it('keeps Radar off the template debug key', () => {
-    expect(radar.signers).not.toContain(normalizeSigner(TEMPLATE_DEBUG));
-    expect(isGenuine(radar, [TEMPLATE_DEBUG])).toBe(false);
+  // The template key is public, so pinning it vouches for nothing. Every app now has a
+  // private key; sliding any of them back to the template would quietly undo its pin.
+  it('keeps every app off the template debug key', () => {
+    for (const app of PING_APPS) {
+      expect(app.signers).not.toContain(normalizeSigner(TEMPLATE_DEBUG));
+      expect(isGenuine(app, [TEMPLATE_DEBUG])).toBe(false);
+    }
+  });
+
+  it('shares one family key between the four apps that were on the debug key', () => {
+    const family = new Set(['lidar', 'sonar', 'pulsar', 'cellar'].map((key) => pingApp(key)!.signers.join()));
+    expect(family.size).toBe(1);
+    expect(radar.signers.join()).not.toBe([...family][0]);
   });
 
   it('spells a digest the same however it is written', () => {
@@ -95,7 +103,7 @@ describe('signing certificates', () => {
     it('accepts the certificate the app ships under, in any spelling', () => {
       expect(isGenuine(radar, [radarSigner])).toBe(true);
       expect(isGenuine(radar, [radarSigner.toUpperCase()])).toBe(true);
-      expect(isGenuine(lidar, [TEMPLATE_DEBUG])).toBe(true);
+      expect(isGenuine(lidar, [lidar.signers[0].toUpperCase()])).toBe(true);
     });
 
     it('refuses a certificate that belongs to another app', () => {

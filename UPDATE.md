@@ -8,6 +8,7 @@
 - Settings: check for updates and download the latest Android build from About
 
 ### Changed
+- Android: signed with a new key, so remove the old version once before installing
 - Settings: signing out asks whether to leave just Sonar or every Ping app
 - Sign-in screen names Pulsar too, so all four apps point at the one account
 - Collection rows drop the coloured rule down their left edge
