@@ -18,6 +18,8 @@ import {
 import { supabase } from '@/lib/supabase';
 import { usePendingSignIn } from '@/store/pendingSignIn';
 
+import { isGenuineInstall } from './pingSigning';
+
 // Signing in from a sibling on the same phone (PING.md §9.13). The link rules
 // are pure and live in lib/pingApps; this is only the part that talks to
 // Android and to Supabase. Identical in every Ping app.
@@ -47,9 +49,16 @@ async function launch(app: PingApp, url: string): Promise<void> {
   });
 }
 
-/** Requester: ask `donor` for a sign-in. The answer arrives on sign-in-return. */
+/**
+ * Requester: ask `donor` for a sign-in. The answer arrives on sign-in-return.
+ *
+ * The donor is checked first. The request carries only the state, but whoever
+ * holds the donor's package name also gets to answer it — and an answer with the
+ * attacker's own token would sign this app in to the attacker's account.
+ */
 export async function requestSiblingSignIn(donor: PingApp): Promise<void> {
   if (!SELF) throw new Error('This build does not know which Ping app it is');
+  if (!isGenuineInstall(donor)) throw new Error(`Couldn't verify ${donor.name} on this phone`);
   const state = stateFrom(getRandomBytes(24));
   usePendingSignIn.getState().open({ state, donor: donor.key, at: Date.now() });
   await launch(donor, shareRequestUrl(donor, SELF, state));
@@ -65,12 +74,24 @@ async function mintAnswer(): Promise<HandoffAnswer> {
 }
 
 /**
+ * What to tell `requester`. The package name in the link is only a claim: on a
+ * sideloaded phone an app built under a sibling's name would receive an explicit
+ * intent addressed to it. So the certificate is checked before anything is
+ * minted, and an app that fails gets the same plain failure as any other — no
+ * token exists for it to take.
+ */
+async function answerFor(requester: PingApp, signedIn: boolean): Promise<HandoffAnswer> {
+  if (!isGenuineInstall(requester)) return { failure: 'failed' };
+  return signedIn ? mintAnswer() : { failure: 'signed-out' };
+}
+
+/**
  * Donor: answer a request, with a fresh one-time token when this app has a
  * session and with the reason when it cannot. It always answers — a requester
  * left waiting just sits on its spinner.
  */
 export async function answerShareRequest(request: ShareRequest, signedIn: boolean): Promise<void> {
-  const answer: HandoffAnswer = signedIn ? await mintAnswer() : { failure: 'signed-out' };
+  const answer = await answerFor(request.requester, signedIn);
   await launch(request.requester, returnUrl(request.requester, request.state, answer));
 }
 
