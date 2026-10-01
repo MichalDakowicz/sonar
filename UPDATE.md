@@ -1,6 +1,6 @@
 # Update notes
 
-## 2.2.0 — Unreleased
+## 2.2.0 — 2026-10-01
 
 ### Added
 - Sign-in screen can continue with a Ping app already signed in on this phone
