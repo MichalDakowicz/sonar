@@ -146,6 +146,11 @@ claiming it is running. Never `input keyevent`/`swipe` past a lock screen.
 Report the actual result — if the build fails or the install rejects, say so with the
 error; do not describe the change as shipped.
 
+**The QR scanner needs a real build.** `expo-camera`'s native module is not in the Expo Go
+binary, so a scan silently never fires there. The sign-in QR screens (`qr-scan`, `qr-show`;
+PING.md §9.14) are only verified on a dev or release build, and the approve step needs a
+signed-in session of your own.
+
 ### Then the web build, same pass
 
 Once the mobile install succeeds, ship web too — standing authorization, so do it without
