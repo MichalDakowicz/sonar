@@ -20,6 +20,10 @@ expo-env.d.ts
 # Native prebuild output — regenerated from app.json, never hand-edited
 android
 ios
+# A local Expo module's own android/ is source, not prebuild output; only its Gradle output is.
+!/modules/**/android
+/modules/**/android/build
+/modules/**/android/.gradle
 
 # Editor directories and files
 .vscode/*

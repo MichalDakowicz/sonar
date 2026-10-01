@@ -1,6 +1,8 @@
 import {
   HANDOFF_TTL_MS,
+  isGenuine,
   mainActivityOf,
+  normalizeSigner,
   PING_APPS,
   pingApp,
   readReturn,
@@ -61,6 +63,65 @@ describe('the family', () => {
     const names = manifest.queries[0].package?.map((entry) => entry.$['android:name']);
     expect(names).toEqual(siblingsOf('lidar').map((app) => app.androidPackage));
     expect(manifest.queries[0].intent).toHaveLength(1);
+  });
+});
+
+describe('signing certificates', () => {
+  // What keytool prints for the stock debug keystore Expo prebuild ships — public.
+  const TEMPLATE_DEBUG = 'FA:C6:17:45:DC:09:03:78:6F:B9:ED:E6:2A:96:2B:39:9F:73:48:F0:BB:6F:89:9B:83:32:66:75:91:03:3B:9C';
+
+  it('pins every app to at least one well-formed SHA-256', () => {
+    for (const app of PING_APPS) {
+      expect(app.signers.length).toBeGreaterThan(0);
+      for (const signer of app.signers) expect(signer).toMatch(/^[0-9a-f]{64}$/);
+    }
+  });
+
+  // The template key is public, so pinning it vouches for nothing. Every app now has a
+  // private key; sliding any of them back to the template would quietly undo its pin.
+  it('keeps every app off the template debug key', () => {
+    for (const app of PING_APPS) {
+      expect(app.signers).not.toContain(normalizeSigner(TEMPLATE_DEBUG));
+      expect(isGenuine(app, [TEMPLATE_DEBUG])).toBe(false);
+    }
+  });
+
+  it('shares one family key between the four apps that were on the debug key', () => {
+    const family = new Set(['lidar', 'sonar', 'pulsar', 'cellar'].map((key) => pingApp(key)!.signers.join()));
+    expect(family.size).toBe(1);
+    expect(radar.signers.join()).not.toBe([...family][0]);
+  });
+
+  it('spells a digest the same however it is written', () => {
+    expect(normalizeSigner(TEMPLATE_DEBUG)).toBe(TEMPLATE_DEBUG.replace(/:/g, '').toLowerCase());
+    expect(normalizeSigner('  AB:cd ')).toBe('abcd');
+  });
+
+  describe('isGenuine', () => {
+    const [radarSigner] = radar.signers;
+
+    it('accepts the certificate the app ships under, in any spelling', () => {
+      expect(isGenuine(radar, [radarSigner])).toBe(true);
+      expect(isGenuine(radar, [radarSigner.toUpperCase()])).toBe(true);
+      expect(isGenuine(lidar, [lidar.signers[0].toUpperCase()])).toBe(true);
+    });
+
+    it('refuses a certificate that belongs to another app', () => {
+      expect(isGenuine(lidar, [radarSigner])).toBe(false);
+      expect(isGenuine(radar, ['0'.repeat(64)])).toBe(false);
+    });
+
+    it('refuses an app signed with anything it did not pin, even beside a pinned one', () => {
+      expect(isGenuine(radar, [radarSigner, '0'.repeat(64)])).toBe(false);
+    });
+
+    it('refuses when nothing was found', () => {
+      expect(isGenuine(radar, [])).toBe(false);
+    });
+
+    it('refuses an app that has no pin, rather than waving it through', () => {
+      expect(isGenuine({ ...radar, signers: [] }, [radarSigner])).toBe(false);
+    });
   });
 });
 

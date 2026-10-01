@@ -1,4 +1,4 @@
-import { Database, Globe, Info, Monitor, Smartphone } from 'lucide-react-native';
+import { Database, Globe, Headphones, Info, Monitor, Smartphone } from 'lucide-react-native';
 import { useRef } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 
@@ -11,6 +11,7 @@ import { CardSizeControl } from '@/features/settings/CardSizeControl';
 import { DataTools } from '@/features/settings/DataTools';
 import { ImportExportSheet } from '@/features/settings/ImportExportSheet';
 import { PrivacyControl } from '@/features/settings/PrivacyControl';
+import { ReminderControl } from '@/features/settings/ReminderControl';
 import { SettingsSection } from '@/features/settings/SettingsSection';
 import { SignOutControl } from '@/features/settings/SignOutControl';
 import { ThemeControl } from '@/features/settings/ThemeControl';
@@ -54,6 +55,10 @@ export default function Settings() {
           <SettingsSection icon={<Monitor size={18} color={MUTED} />} title="Appearance">
             <ThemeControl />
             <CardSizeControl />
+          </SettingsSection>
+
+          <SettingsSection icon={<Headphones size={18} color={MUTED} />} title="Listening">
+            <ReminderControl />
           </SettingsSection>
 
           <SettingsSection icon={<Database size={18} color={MUTED} />} title="Data">

@@ -46,10 +46,18 @@
           "recordAudioAndroid": false
         }
       ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notification-icon.png",
+          "color": "#10b981"
+        }
+      ],
       "expo-sharing",
       "expo-web-browser",
       "./plugins/withGradleMemory",
-      "./plugins/withPingSiblings"
+      "./plugins/withPingSiblings",
+      "./plugins/withPingSigning"
     ],
     "experiments": {
       "typedRoutes": false,
