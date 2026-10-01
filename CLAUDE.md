@@ -123,7 +123,13 @@ mv app/build/outputs/apk/release/app-release.apk \
 adb install --no-streaming --user 0 -r app/build/outputs/apk/release/sonar-v<version>.apk
 ```
 
-Release builds are signed with the debug keystore, so replacement installs upgrade in place.
+Release and debug builds are signed with the Ping family key (`plugins/withPingSigning.js`),
+read from `<workspace>/credentials/ping-family-signing.properties` — outside every repo — or from
+the file `PING_SIGNING_PROPERTIES` names (a worktree outside the workspace needs that). A release
+build without it fails at signing instead of falling back to the stock debug key, whose APK would
+not install over this one. Replacement installs upgrade in place. The first install after the
+move off the stock debug key needs the old build uninstalled once (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`);
+that loses the app's local state, so ask before running `adb uninstall`.
 On this phone, installs without `--user 0` stayed pending after transfer, even unlocked.
 Target profile 0 and use `--no-streaming`; this completed all four updates on 2026-09-30.
 

@@ -36,19 +36,20 @@ export type PingApp = {
 const RADAR_SIGNER = 'd71a5f6ddd16a9ef9aa43538d2581ea4dc7efdc9d45f99693d7ce0c963f7181e';
 
 /**
- * The debug keystore Expo prebuild writes into `android/app/` — one file, password
- * `android`, the same in every Ping app but Radar's release build. Pinning it tells
- * apart a squatter signed with some other key, not one signed with this: it is not
- * secret. Only a private release key per app closes that, and only Radar has one.
+ * The Ping family key, shared by Lidar, Sonar, Pulsar and Cellar — private, kept in
+ * `<workspace>/credentials/` and applied by plugins/withPingSigning.js. These apps used
+ * to sign with the stock debug keystore Expo prebuild writes into `android/app/`: one
+ * file, password `android`, identical everywhere, so pinning it vouched for nothing.
+ * Never pin that key again; pingApps.test.ts fails if anyone does.
  */
-const TEMPLATE_DEBUG_SIGNER = 'fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c';
+const FAMILY_SIGNER = 'c72fdb8bb5d83face122d1e40f5bbe702f7433507ef3d4493a0b0325dc59610b';
 
 export const PING_APPS: readonly PingApp[] = [
   { key: 'radar', name: 'Radar', androidPackage: 'com.michaldakowicz.radar', signers: [RADAR_SIGNER] },
-  { key: 'lidar', name: 'Lidar', androidPackage: 'com.michaldakowicz.lidar', signers: [TEMPLATE_DEBUG_SIGNER] },
-  { key: 'sonar', name: 'Sonar', androidPackage: 'com.michaldakowicz.sonar', signers: [TEMPLATE_DEBUG_SIGNER] },
-  { key: 'pulsar', name: 'Pulsar', androidPackage: 'com.michaldakowicz.pulsar', signers: [TEMPLATE_DEBUG_SIGNER] },
-  { key: 'cellar', name: 'Cellar', androidPackage: 'com.michaldakowicz.cellar', signers: [TEMPLATE_DEBUG_SIGNER] },
+  { key: 'lidar', name: 'Lidar', androidPackage: 'com.michaldakowicz.lidar', signers: [FAMILY_SIGNER] },
+  { key: 'sonar', name: 'Sonar', androidPackage: 'com.michaldakowicz.sonar', signers: [FAMILY_SIGNER] },
+  { key: 'pulsar', name: 'Pulsar', androidPackage: 'com.michaldakowicz.pulsar', signers: [FAMILY_SIGNER] },
+  { key: 'cellar', name: 'Cellar', androidPackage: 'com.michaldakowicz.cellar', signers: [FAMILY_SIGNER] },
 ];
 
 export const SHARE_ROUTE = 'share-sign-in';
