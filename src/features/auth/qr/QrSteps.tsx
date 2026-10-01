@@ -20,12 +20,13 @@ type ApprovalStepProps = {
 
 /** A request in front of the signed-in person. */
 export function ApprovalStep({ matchCode, requester, expiresAt, deciding, onDecide }: ApprovalStepProps) {
+  const seconds = useSecondsLeft(expiresAt);
   return (
     <QrApprovalCard
       copy={QR_COPY}
       matchCode={matchCode}
       requester={requester}
-      secondsLeft={useSecondsLeft(expiresAt)}
+      secondsLeft={seconds}
       deciding={deciding}
       onApprove={() => onDecide('approve')}
       onDecline={() => onDecide('decline')}
@@ -37,12 +38,13 @@ type ShowingStepProps = { payload: string; matchCode: string; expiresAt: string;
 
 /** A code on screen, waiting to be scanned. */
 export function ShowingStep({ payload, matchCode, expiresAt, help, size }: ShowingStepProps) {
+  const seconds = useSecondsLeft(expiresAt);
   return (
     <QrCodePanel
       copy={QR_COPY}
       payload={payload}
       matchCode={matchCode}
-      secondsLeft={useSecondsLeft(expiresAt)}
+      secondsLeft={seconds}
       help={help}
       size={size}
     />

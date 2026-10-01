@@ -30,7 +30,12 @@ export default function QrShow() {
       {state.phase === 'idle' || state.phase === 'working' ? (
         <QrNotice busy title={QR_COPY.gettingCode} />
       ) : state.phase === 'showing' ? (
-        <ShowingStep payload={state.payload} matchCode={state.matchCode} expiresAt={state.expiresAt} help={QR_COPY.showHint} />
+        <ShowingStep
+          payload={state.payload}
+          matchCode={state.matchCode}
+          expiresAt={state.expiresAt}
+          help={QR_COPY.showHint}
+        />
       ) : state.phase === 'confirm' ? (
         <ApprovalStep
           matchCode={state.matchCode}

@@ -1,5 +1,5 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Pressable, Text, View } from 'react-native';
 
 import type { QrCopy } from '@/features/auth/qr/qrCopy';
@@ -23,6 +23,14 @@ type QrScannerProps = {
 export function QrScanner({ copy, hint, onTarget }: QrScannerProps) {
   const [permission, requestPermission] = useCameraPermissions();
   const last = useRef<{ text: string; at: number } | null>(null);
+
+  // Ask once, as the screen opens: the button below is for trying again, not for the first go.
+  const asked = useRef(false);
+  useEffect(() => {
+    if (asked.current || !permission || permission.granted || !permission.canAskAgain) return;
+    asked.current = true;
+    void requestPermission();
+  }, [permission, requestPermission]);
 
   const onScanned = useCallback(
     ({ data }: { data: string }) => {

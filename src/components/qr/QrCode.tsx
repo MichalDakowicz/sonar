@@ -15,7 +15,7 @@ type QrCodeProps = {
  * contrast, not taste, and plenty of them fail on an inverted code — which is why
  * these two are keywords rather than tokens.
  */
-export function QrCode({ value, size = 232, label = 'QR code' }: QrCodeProps) {
+export function QrCode({ value, size = 300, label = 'QR code' }: QrCodeProps) {
   const { path, modules } = useMemo(() => {
     const matrix = qrMatrix(value);
     return { path: qrPath(matrix), modules: matrix.length };

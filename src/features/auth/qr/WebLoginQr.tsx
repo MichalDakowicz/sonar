@@ -31,17 +31,37 @@ export function WebLoginQr() {
       return <QrNotice busy title={QR_COPY.gettingCode} />;
     case 'showing':
       return (
-        <>
-          <ShowingStep payload={state.payload} matchCode={state.matchCode} expiresAt={state.expiresAt} help={QR_COPY.webHelp} size={200} />
-        </>
+        <ShowingStep
+          payload={state.payload}
+          matchCode={state.matchCode}
+          expiresAt={state.expiresAt}
+          help={QR_COPY.webHelp}
+          size={260}
+        />
       );
     case 'deciding':
-      return <WaitingStep matchCode={state.matchCode} expiresAt={state.expiresAt} onCancel={() => { reset(); fresh(); }} />;
+      return (
+        <WaitingStep
+          matchCode={state.matchCode}
+          expiresAt={state.expiresAt}
+          onCancel={() => {
+            reset();
+            fresh();
+          }}
+        />
+      );
     case 'signing-in':
       return <QrNotice busy title={QR_COPY.signingIn} />;
     case 'denied':
       return <QrEnding kind="denied" again={{ label: QR_COPY.newCode, onPress: fresh }} onDone={reset} />;
     case 'ended':
-      return <QrEnding kind={state.reason} detail={state.detail} again={{ label: QR_COPY.newCode, onPress: fresh }} onDone={reset} />;
+      return (
+        <QrEnding
+          kind={state.reason}
+          detail={state.detail}
+          again={{ label: QR_COPY.newCode, onPress: fresh }}
+          onDone={reset}
+        />
+      );
   }
 }
