@@ -6,6 +6,7 @@
 - Sign-in screen can continue with a Ping app already signed in on this phone
 - Android: a new-version notice shows release notes and remembers Later for that version
 - Settings: check for updates and download the latest Android build from About
+- Settings: an optional daily listening reminder, skipped on days you have logged a spin
 
 ### Changed
 - Android: signed with a new key, so remove the old version once before installing

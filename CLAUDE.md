@@ -152,6 +152,11 @@ claiming it is running. Never `input keyevent`/`swipe` past a lock screen.
 Report the actual result — if the build fails or the install rejects, say so with the
 error; do not describe the change as shipped.
 
+**The daily reminder needs a real build.** `expo-notifications` schedules into Android's queue,
+which Expo Go does not give you, so a reminder silently never fires there. The queue is rebuilt
+from `store/reminderPrefs` and the spin log whenever either changes and on every foreground
+(`features/notifications/useReminders`); `lib/reminderPlan` is the part to test.
+
 ### Then the web build, same pass
 
 Once the mobile install succeeds, ship web too — standing authorization, so do it without
