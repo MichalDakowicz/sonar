@@ -22,14 +22,33 @@ export type PingApp = {
   name: string;
   /** Android application id, which is also where its one activity lives. */
   androidPackage: string;
+  /**
+   * SHA-256 of each signing certificate the app is allowed to ship under, as
+   * lowercase hex. A package name proves nothing on a sideloaded phone; this does.
+   */
+  signers: readonly string[];
 };
 
+/**
+ * Radar's upload key — private. When Radar ships through Play, add Play's
+ * app-signing SHA-256 beside it: an install from the store is signed with that.
+ */
+const RADAR_SIGNER = 'd71a5f6ddd16a9ef9aa43538d2581ea4dc7efdc9d45f99693d7ce0c963f7181e';
+
+/**
+ * The debug keystore Expo prebuild writes into `android/app/` — one file, password
+ * `android`, the same in every Ping app but Radar's release build. Pinning it tells
+ * apart a squatter signed with some other key, not one signed with this: it is not
+ * secret. Only a private release key per app closes that, and only Radar has one.
+ */
+const TEMPLATE_DEBUG_SIGNER = 'fac61745dc0903786fb9ede62a962b399f7348f0bb6f899b8332667591033b9c';
+
 export const PING_APPS: readonly PingApp[] = [
-  { key: 'radar', name: 'Radar', androidPackage: 'com.michaldakowicz.radar' },
-  { key: 'lidar', name: 'Lidar', androidPackage: 'com.michaldakowicz.lidar' },
-  { key: 'sonar', name: 'Sonar', androidPackage: 'com.michaldakowicz.sonar' },
-  { key: 'pulsar', name: 'Pulsar', androidPackage: 'com.michaldakowicz.pulsar' },
-  { key: 'cellar', name: 'Cellar', androidPackage: 'com.michaldakowicz.cellar' },
+  { key: 'radar', name: 'Radar', androidPackage: 'com.michaldakowicz.radar', signers: [RADAR_SIGNER] },
+  { key: 'lidar', name: 'Lidar', androidPackage: 'com.michaldakowicz.lidar', signers: [TEMPLATE_DEBUG_SIGNER] },
+  { key: 'sonar', name: 'Sonar', androidPackage: 'com.michaldakowicz.sonar', signers: [TEMPLATE_DEBUG_SIGNER] },
+  { key: 'pulsar', name: 'Pulsar', androidPackage: 'com.michaldakowicz.pulsar', signers: [TEMPLATE_DEBUG_SIGNER] },
+  { key: 'cellar', name: 'Cellar', androidPackage: 'com.michaldakowicz.cellar', signers: [TEMPLATE_DEBUG_SIGNER] },
 ];
 
 export const SHARE_ROUTE = 'share-sign-in';
@@ -71,6 +90,22 @@ export function pingApp(key: unknown): PingApp | null {
 
 export function siblingsOf(self: PingAppKey): PingApp[] {
   return PING_APPS.filter((app) => app.key !== self);
+}
+
+/** `AA:bb:…` and `aabb…` both come out as `aabb…`, so keytool's spelling compares too. */
+export function normalizeSigner(digest: string): string {
+  return digest.replace(/[^0-9a-f]/gi, '').toLowerCase();
+}
+
+/**
+ * Whether the certificates Android reports for an installed package are the ones
+ * `app` ships under. Every one of them must be pinned. Nothing found (not
+ * installed, no certificate) fails, and so does an app with no pin at all.
+ */
+export function isGenuine(app: PingApp, found: readonly string[]): boolean {
+  if (found.length === 0) return false;
+  const pinned = app.signers.map(normalizeSigner);
+  return found.every((digest) => pinned.includes(normalizeSigner(digest)));
 }
 
 /** Expo prebuild names every app's single activity `<package>.MainActivity`. */
