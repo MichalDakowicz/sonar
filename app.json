@@ -2,7 +2,7 @@
   "expo": {
     "name": "Sonar",
     "slug": "sonar",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "sonar",
@@ -23,7 +23,7 @@
         }
       ],
       "package": "com.michaldakowicz.sonar",
-      "versionCode": 4
+      "versionCode": 5
     },
     "web": {
       "output": "single",
