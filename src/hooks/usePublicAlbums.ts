@@ -36,6 +36,8 @@ export function usePublicAlbums(userId: string | undefined) {
       return (data as AlbumRow[]).map(normalizeAlbum);
     },
     enabled: !!userId,
+    // A friend's whole collection, every column: opening it twice in a row must not pull it twice.
+    staleTime: 5 * 60 * 1000,
   });
   return { albums: query.data ?? [], loading: query.isLoading, error: query.error };
 }

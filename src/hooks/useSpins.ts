@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { useAuth } from '@/features/auth/AuthProvider';
-import { albumsQueryKey } from '@/hooks/useAlbums';
+import { refreshAlbum } from '@/hooks/albumsCache';
 import { normalizeSpin, type SpinRow } from '@/lib/normalizeAlbum';
 import { summarizeSpins } from '@/lib/spins';
 import { stripUndefined } from '@/lib/stripUndefined';
@@ -14,7 +14,7 @@ import type { Album, Spin } from '@/types/album';
 // both. One row per listen is small — thousands of them are tens of kilobytes.
 const SPIN_LIMIT = 5000;
 
-function spinsQueryKey(userId: string | undefined) {
+export function spinsQueryKey(userId: string | undefined) {
   return ['spins', userId] as const;
 }
 
@@ -46,21 +46,6 @@ export function useSpins() {
     queryFn: () => fetchSpins(user!.id),
     enabled: !!user,
   });
-
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel(`album_spins:${user.id}:${Math.random().toString(36).slice(2)}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'album_spins', filter: `user_id=eq.${user.id}` },
-        () => queryClient.invalidateQueries({ queryKey }),
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user, queryClient, queryKey]);
 
   // Memoized rather than `query.data ?? []` inline: a fresh array literal every
   // render would re-run every consumer's derivation over the whole log.
@@ -104,7 +89,7 @@ export function useSpins() {
     if (activityError) console.error('Failed to log spin activity', activityError);
 
     queryClient.invalidateQueries({ queryKey });
-    queryClient.invalidateQueries({ queryKey: albumsQueryKey(user.id) });
+    void refreshAlbum(queryClient, user.id, album.id);
   };
 
   const removeSpin = async (spinId: string) => {
@@ -133,7 +118,7 @@ export function useSpins() {
     }
 
     queryClient.invalidateQueries({ queryKey });
-    queryClient.invalidateQueries({ queryKey: albumsQueryKey(user.id) });
+    if (spin?.albumId) void refreshAlbum(queryClient, user.id, spin.albumId);
   };
 
   return {
