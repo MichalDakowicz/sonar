@@ -159,3 +159,50 @@ export function readReturn(params: Params, pending: PendingHandoff | null, now: 
   const failure: HandoffFailure = one(params.error) === 'signed-out' ? 'signed-out' : 'failed';
   return { kind: 'failure', failure, donor };
 }
+
+/** What a handoff link is remembered by: the route it opens and its state. */
+export function handoffKey(route: string, state: string): string {
+  return `${route}:${state}`;
+}
+
+/** The same key from route params, or null when they carry no usable state. */
+export function handoffKeyOf(route: string, params: Params): string | null {
+  const state = one(params.state);
+  return state && STATE.test(state) ? handoffKey(route, state) : null;
+}
+
+/** A sibling sign-in link, ready to hand to the router. */
+export type HandoffLink = { route: typeof SHARE_ROUTE | typeof RETURN_ROUTE; href: string; key: string };
+
+const HANDOFF_LINK = new RegExp(String.raw`^([a-z][a-z0-9+.-]*)://(${SHARE_ROUTE}|${RETURN_ROUTE})/?\?(.*)$`, 'i');
+
+function decoded(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+/**
+ * The sibling sign-in link an Activity was launched with, if it is one and it is
+ * addressed to `self`; null for anything else.
+ *
+ * Android hands a freshly attached Activity its launch URL, but a JS runtime that
+ * outlived the previous Activity never hears about it as an event — the link has to
+ * be read back from the intent (`Linking.getInitialURL`). Only the two handoff
+ * routes are ever read back, and only with a well-formed state.
+ */
+export function readHandoffLink(url: string, self: PingAppKey): HandoffLink | null {
+  const match = HANDOFF_LINK.exec(url);
+  if (!match || match[1].toLowerCase() !== self) return null;
+  const route = match[2].toLowerCase() as HandoffLink['route'];
+  const params = Object.fromEntries(
+    match[3].split('&').map((pair) => {
+      const [name, value = ''] = pair.split('=');
+      return [name, decoded(value)];
+    }),
+  );
+  const key = handoffKeyOf(route, params);
+  return key ? { route, href: `/${route}?${match[3]}`, key } : null;
+}

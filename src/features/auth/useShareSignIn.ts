@@ -2,7 +2,8 @@ import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, useMemo, useRef } from 'react';
 import { Platform } from 'react-native';
 
-import { readShareRequest, type ShareRequest } from '@/lib/pingApps';
+import { claimHandoffLink } from '@/lib/handoffSeen';
+import { handoffKey, readShareRequest, SHARE_ROUTE, type ShareRequest } from '@/lib/pingApps';
 
 import { useAuth } from './AuthProvider';
 import { answerShareRequest, SELF } from './siblingHandoff';
@@ -27,6 +28,8 @@ export function useShareSignIn(): ShareRequest | null {
   useEffect(() => {
     if (answered.current) return;
     answered.current = true;
+    // Remembered so a replay of this launch link (useReplayHandoffLink) knows it was answered.
+    if (request) claimHandoffLink(handoffKey(SHARE_ROUTE, request.state));
     const leave = () => router.replace('/' as Href);
 
     if (Platform.OS !== 'android' || !request) {

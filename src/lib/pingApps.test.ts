@@ -1,10 +1,13 @@
 import {
   HANDOFF_TTL_MS,
+  handoffKey,
+  handoffKeyOf,
   isGenuine,
   mainActivityOf,
   normalizeSigner,
   PING_APPS,
   pingApp,
+  readHandoffLink,
   readReturn,
   readShareRequest,
   returnUrl,
@@ -202,5 +205,59 @@ describe('readReturn', () => {
     expect(readReturn({ state: STATE, token_hash: 'deadbeef'.repeat(7) }, pending, now - 1)).toEqual({
       kind: 'stale',
     });
+  });
+});
+
+describe('readHandoffLink', () => {
+  it('reads a request back from its URL', () => {
+    const url = shareRequestUrl(radar, lidar, STATE);
+    expect(readHandoffLink(url, 'radar')).toEqual({
+      route: 'share-sign-in',
+      href: `/share-sign-in?for=lidar&state=${STATE}`,
+      key: `share-sign-in:${STATE}`,
+    });
+  });
+
+  it('reads an answer back from its URL', () => {
+    const url = returnUrl(radar, STATE, { tokenHash: 'deadbeef'.repeat(7) });
+    expect(readHandoffLink(url, 'radar')).toMatchObject({ route: 'sign-in-return', key: `sign-in-return:${STATE}` });
+  });
+
+  it('reads a failure answer too, so a signed-out donor is still reported', () => {
+    const url = returnUrl(radar, STATE, { failure: 'signed-out' });
+    expect(readHandoffLink(url, 'radar')?.href).toBe(`/sign-in-return?state=${STATE}&error=signed-out`);
+  });
+
+  it('accepts a slash before the query, as Android prints it', () => {
+    expect(readHandoffLink(`radar://share-sign-in/?for=lidar&state=${STATE}`, 'radar')).not.toBeNull();
+  });
+
+  it('ignores a link addressed to another app', () => {
+    expect(readHandoffLink(shareRequestUrl(lidar, radar, STATE), 'radar')).toBeNull();
+  });
+
+  it('ignores every other route on this scheme', () => {
+    expect(readHandoffLink(`radar://settings?state=${STATE}`, 'radar')).toBeNull();
+    expect(readHandoffLink(`radar://movie/1?state=${STATE}`, 'radar')).toBeNull();
+    expect(readHandoffLink(`radar://share-sign-in-extra?state=${STATE}`, 'radar')).toBeNull();
+  });
+
+  it('ignores a missing or malformed state', () => {
+    expect(readHandoffLink('radar://share-sign-in?for=lidar', 'radar')).toBeNull();
+    expect(readHandoffLink('radar://share-sign-in?for=lidar&state=nope', 'radar')).toBeNull();
+    expect(readHandoffLink('radar://share-sign-in', 'radar')).toBeNull();
+  });
+
+  it('ignores a URL that is not a link at all', () => {
+    expect(readHandoffLink('', 'radar')).toBeNull();
+    expect(readHandoffLink('https://example.com/share-sign-in?state=' + STATE, 'radar')).toBeNull();
+  });
+
+  it('keys a link the way the routes key it', () => {
+    const link = readHandoffLink(shareRequestUrl(radar, lidar, STATE), 'radar');
+    expect(link?.key).toBe(handoffKey('share-sign-in', STATE));
+    expect(handoffKeyOf('share-sign-in', paramsOf(shareRequestUrl(radar, lidar, STATE)))).toBe(link?.key);
+    expect(handoffKeyOf('share-sign-in', {})).toBeNull();
+    expect(handoffKeyOf('share-sign-in', { state: 'nope' })).toBeNull();
   });
 });

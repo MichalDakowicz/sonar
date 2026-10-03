@@ -9,6 +9,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { NAV_DESTINATIONS } from '@/components/layout/navDestinations';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
+import { HandoffReplay } from '@/features/auth/HandoffReplay';
 import { LibrarySync } from '@/features/albums/LibrarySync';
 import { ReminderSync } from '@/features/notifications/ReminderSync';
 import { UpdateNotice } from '@/features/updates/UpdateNotice';
@@ -55,6 +56,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <ReminderSync />
       <LibrarySync />
       <UpdateNotice />
+      <HandoffReplay />
     </>
   );
 }
