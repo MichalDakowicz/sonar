@@ -38,7 +38,7 @@ describe('the family', () => {
 
   it('leaves the asking app out of its own siblings', () => {
     const keys = siblingsOf('pulsar').map((app) => app.key);
-    expect(keys).toEqual(['radar', 'lidar', 'sonar', 'cellar']);
+    expect(keys).toEqual(['radar', 'lidar', 'sonar', 'cellar', 'bazaar']);
   });
 
   it('names the activity Expo prebuild generates', () => {
@@ -87,7 +87,7 @@ describe('signing certificates', () => {
   });
 
   it('shares one family key between the four apps that were on the debug key', () => {
-    const family = new Set(['lidar', 'sonar', 'pulsar', 'cellar'].map((key) => pingApp(key)!.signers.join()));
+    const family = new Set(['lidar', 'sonar', 'pulsar', 'cellar', 'bazaar'].map((key) => pingApp(key)!.signers.join()));
     expect(family.size).toBe(1);
     expect(radar.signers.join()).not.toBe([...family][0]);
   });

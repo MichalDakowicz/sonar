@@ -18,6 +18,7 @@ const PING_PACKAGES = [
   'com.michaldakowicz.sonar',
   'com.michaldakowicz.pulsar',
   'com.michaldakowicz.cellar',
+  'com.michaldakowicz.bazaar',
 ];
 
 function addPingQueries(manifest, ownPackage) {
