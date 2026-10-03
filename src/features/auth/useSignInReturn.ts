@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useEffect, useRef } from 'react';
 
-import type { ReturnOutcome } from '@/lib/pingApps';
+import { claimHandoffLink } from '@/lib/handoffSeen';
+import { handoffKeyOf, RETURN_ROUTE, type ReturnOutcome } from '@/lib/pingApps';
 
 import { useAuth } from './AuthProvider';
 import { completeSiblingSignIn } from './siblingHandoff';
@@ -23,6 +24,9 @@ export function useSignInReturn(onFailure: (outcome: Exclude<ReturnOutcome, { ki
   useEffect(() => {
     if (handled.current) return;
     handled.current = true;
+    // Remembered so a replay of this launch link (useReplayHandoffLink) knows it was taken.
+    const key = handoffKeyOf(RETURN_ROUTE, params);
+    if (key) claimHandoffLink(key);
 
     completeSiblingSignIn(params)
       .catch((): ReturnOutcome => ({ kind: 'stale' }))

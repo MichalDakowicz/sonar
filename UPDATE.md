@@ -2,6 +2,15 @@
 
 ## 2.3.0 — Unreleased
 
+### Added
+- Sign-in screen: continue with Bazaar when it is installed on this phone
+
+### Changed
+- Sign-in screen: Ping apps on this phone sit behind one Choose an app button
+
+### Fixed
+- Sign-in screen: continuing with an app that is already open now signs you in
+
 ## 2.2.0 — 2026-10-01
 
 ### Added
