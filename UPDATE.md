@@ -2,6 +2,9 @@
 
 ## 2.3.0 — Unreleased
 
+### Changed
+- Sign-in screen: Ping apps on this phone sit behind one Choose an app button
+
 ## 2.2.0 — 2026-10-01
 
 ### Added
