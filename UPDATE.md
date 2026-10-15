@@ -1,6 +1,6 @@
 # Update notes
 
-## 2.3.0 — Unreleased
+## 2.3.0 — 2026-10-15
 
 ### Added
 - Sign-in screen: continue with Bazaar when it is installed on this phone
