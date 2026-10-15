@@ -32,6 +32,7 @@ export function WebLoginQr() {
     case 'showing':
       return (
         <ShowingStep
+          signInCode={state.signInCode}
           payload={state.payload}
           matchCode={state.matchCode}
           expiresAt={state.expiresAt}

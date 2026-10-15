@@ -39,6 +39,7 @@ export function useQrRequester() {
         phase: 'showing',
         id: started.id,
         payload: qrPayload({ mode: 'web', id: started.id }),
+        signInCode: started.signInCode,
         matchCode: started.matchCode,
         expiresAt: started.expiresAt,
         renewals,
@@ -55,6 +56,18 @@ export function useQrRequester() {
       const joined = await qrLogin.join(target.id, target.nonce, secret.challenge, thisDevice());
       verifier.current = secret.verifier;
       setState({ phase: 'deciding', id: target.id, matchCode: joined.matchCode, expiresAt: joined.expiresAt });
+    } catch (error) {
+      setState(endedBy(error));
+    }
+  }, []);
+
+  const joinCode = useCallback(async (code: string) => {
+    setState({ phase: 'working' });
+    try {
+      const secret = await newVerifier();
+      const joined = await qrLogin.joinCode(code, secret.challenge, thisDevice());
+      verifier.current = secret.verifier;
+      setState({ phase: 'deciding', id: joined.id, matchCode: joined.matchCode, expiresAt: joined.expiresAt });
     } catch (error) {
       setState(endedBy(error));
     }
@@ -107,5 +120,5 @@ export function useQrRequester() {
     );
   }, [id, showCode]);
 
-  return { state, showCode, join, reset };
+  return { state, showCode, join, joinCode, reset };
 }

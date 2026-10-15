@@ -30,6 +30,7 @@ export function useQrApprover() {
         phase: 'showing',
         id: offered.id,
         payload: offered.payload,
+        signInCode: offered.signInCode,
         matchCode: offered.matchCode,
         expiresAt: offered.expiresAt,
         renewals,
@@ -51,6 +52,17 @@ export function useQrApprover() {
         expiresAt: asked.expiresAt,
         deciding: null,
       });
+    } catch (error) {
+      setState(endedBy(error));
+    }
+  }, []);
+
+  const claimCode = useCallback(async (code: string) => {
+    setState({ phase: 'working' });
+    try {
+      const asked = await qrLogin.claimCode(code);
+      setState({ phase: 'confirm', id: asked.id, matchCode: asked.matchCode,
+        requester: asked.requester, expiresAt: asked.expiresAt, deciding: null });
     } catch (error) {
       setState(endedBy(error));
     }
@@ -113,5 +125,5 @@ export function useQrApprover() {
     );
   }, [id, showCode]);
 
-  return { state, showCode, claim, decide, reset };
+  return { state, showCode, claim, claimCode, decide, reset };
 }
