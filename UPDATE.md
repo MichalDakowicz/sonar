@@ -1,6 +1,6 @@
 # Update notes
 
-## 2.3.0 — Unreleased
+## 2.3.0 — 2026-10-15
 
 ### Added
 - Sign-in screen: continue with Bazaar when it is installed on this phone
@@ -10,6 +10,8 @@
 
 ### Fixed
 - Sign-in screen: continuing with an app that is already open now signs you in
+- Bottom sheet fields and buttons stay above the Android keyboard
+- Section headers use Sonar's emerald accent
 
 ## 2.2.0 — 2026-10-01
 
