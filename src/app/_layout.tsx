@@ -7,6 +7,7 @@ import { useCallback, useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { NAV_DESTINATIONS } from '@/components/layout/navDestinations';
+import { KeyboardFrame } from '@/components/layout/KeyboardFrame';
 import { ToastProvider } from '@/components/ui/Toast';
 import { AuthProvider, useAuth } from '@/features/auth/AuthProvider';
 import { HandoffReplay } from '@/features/auth/HandoffReplay';
@@ -70,7 +71,9 @@ export default function RootLayout() {
             <ToastProvider>
               <AuthGate>
                 <AppShell>
-                  <Stack screenOptions={{ headerShown: false }} />
+                  <KeyboardFrame>
+                    <Stack screenOptions={{ headerShown: false }} />
+                  </KeyboardFrame>
                 </AppShell>
               </AuthGate>
             </ToastProvider>

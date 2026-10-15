@@ -2,6 +2,10 @@
 
 ## 2.3.1 — Unreleased
 
+### Fixed
+
+- Inputs stay above the Android keyboard on full-screen forms
+
 ## 2.3.0 — 2026-10-15
 
 ### Added
