@@ -20,7 +20,7 @@ export type ApproverState =
   | { phase: 'idle' }
   | { phase: 'working' }
   /** Phone mode: this phone is showing a code and waiting for a signed-out device to scan it. */
-  | { phase: 'showing'; id: string; payload: string; matchCode: string; expiresAt: string; renewals: number }
+  | { phase: 'showing'; id: string; payload: string; signInCode?: string; matchCode: string; expiresAt: string; renewals: number }
   /** Somebody is asking. Nothing happens until a person says yes or no. */
   | {
       phase: 'confirm';
@@ -71,7 +71,7 @@ export type RequesterState =
   | { phase: 'idle' }
   | { phase: 'working' }
   /** Web mode: this screen is showing a code and waiting for a signed-in phone to scan it. */
-  | { phase: 'showing'; id: string; payload: string; matchCode: string; expiresAt: string; renewals: number }
+  | { phase: 'showing'; id: string; payload: string; signInCode?: string; matchCode: string; expiresAt: string; renewals: number }
   /** Scanned, and a person on the other device is deciding. */
   | { phase: 'deciding'; id: string; matchCode: string; expiresAt: string }
   /** Approved: the token is in hand and is being turned into a session. */

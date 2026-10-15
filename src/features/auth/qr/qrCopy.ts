@@ -11,22 +11,27 @@ export type QrCopy = typeof QR_COPY;
 export const QR_COPY = {
   // Settings
   showRowTitle: 'Sign in another device',
-  showRowSub: 'Show a code for a signed-out phone to scan',
-  scanRowTitle: 'Scan a code',
+  showRowSub: 'Show a sign-in code or QR for another device',
+  scanRowTitle: 'Enter or scan a code',
   scanRowSub: 'Let a browser or another phone in, once you have checked it is them',
 
+  signInCode: 'Sign-in code',
+  enterCode: 'Enter a sign-in code',
+  useCode: 'Continue',
+  scanQr: 'Scan a QR code',
+
   // Sign-in screen
-  loginScan: 'Sign in with a QR code',
+  loginScan: 'Sign in with a code or QR',
   loginShowOnWeb: 'Sign in with your phone',
   webTitle: 'Scan this with a signed-in Ping app',
-  webHelp: `Open ${APP_NAME} on your phone, then Settings → Scan a code. Radar, Lidar, Sonar, Pulsar and Cellar all work.`,
+  webHelp: `Open ${APP_NAME} on your phone, then Settings → Enter or scan a code. Type this code or scan the QR.`,
 
   // The two screens
-  scanTitle: 'Scan a code',
+  scanTitle: 'Enter or scan a code',
   showTitle: 'Sign in another device',
   scanHintSignedIn: 'Point the camera at the code on the screen you want to sign in',
   scanHintSignedOut: 'Point the camera at the code on your signed-in phone. It is under Settings → Sign in another device',
-  showHint: `On the other phone, open ${APP_NAME} (or any Ping app) and choose Sign in with a QR code`,
+  showHint: `On the other phone, open ${APP_NAME} or any Ping app and choose Sign in with a code or QR. Type this code or scan the QR.`,
   checking: 'Checking the code…',
   gettingCode: 'Getting a code…',
   signingIn: 'Signing you in…',
