@@ -10,6 +10,7 @@
 
 ### Fixed
 - Sign-in screen: continuing with an app that is already open now signs you in
+- Bottom sheet fields and buttons stay above the Android keyboard
 
 ## 2.2.0 — 2026-10-01
 

@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SHEET_HANDLE_HEIGHT, resolveSnapPoints, type SheetHandle, type SheetProps } from '@/components/ui/sheetTypes';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { isWeb } from '@/hooks/useResponsive';
 
 /**
@@ -56,6 +57,11 @@ export const SheetPanel = forwardRef<SheetHandle, SheetProps>(function SheetPane
   const { height: windowHeight } = useWindowDimensions();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme !== 'light';
+  // The Modal runs edge-to-edge (both translucent flags below), and an
+  // edge-to-edge window is not resized by the keyboard on Android, so the sheet
+  // lifts itself. iOS is handled by the KeyboardAvoidingView.
+  const keyboardHeight = useKeyboardHeight();
+  const lift = Platform.OS === 'android' ? keyboardHeight : 0;
 
   // Keyed on the *contents* of snapPoints, not its identity: every call site
   // passes an inline array literal, so a reference dep would rebuild `heights`
@@ -73,10 +79,12 @@ export const SheetPanel = forwardRef<SheetHandle, SheetProps>(function SheetPane
   // The snap point is a ceiling, not a target: a sheet that declares its
   // content height shrinks to fit rather than rendering with the surplus empty.
   const snapHeight = heights[Math.max(0, activeIndex)];
-  const height =
+  const fitted =
     contentHeight != null && contentHeight > 0
       ? Math.min(contentHeight + SHEET_HANDLE_HEIGHT + insets.bottom, snapHeight)
       : snapHeight;
+  // Lifted above the keyboard, a tall snap point would run off the top edge.
+  const height = lift > 0 ? Math.min(fitted, windowHeight - lift - insets.top) : fitted;
   // Slide distance and drag maths must use the rendered height, not the snap.
   const heightRef = useRef(height);
   useEffect(() => {
@@ -275,9 +283,9 @@ export const SheetPanel = forwardRef<SheetHandle, SheetProps>(function SheetPane
       navigationBarTranslucent
     >
       <KeyboardAvoidingView
-        style={{ flex: 1, justifyContent: 'flex-end' }}
-        // Android resizes the window itself (windowSoftInputMode=adjustResize);
-        // padding here on top of that would shift the sheet twice.
+        style={{ flex: 1, justifyContent: 'flex-end', paddingBottom: lift }}
+        // Android gets `lift` instead: adjustResize does not reach an
+        // edge-to-edge Modal window, so the behavior here would do nothing.
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)', opacity: backdrop }]}>
