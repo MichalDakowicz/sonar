@@ -33,7 +33,7 @@ export function useActivityReactions(activityIds: string[]) {
   const query = useQuery({
     queryKey,
     queryFn: async () => {
-      const { data, error } = await supabase.from('album_activity_reactions').select('*').in('activity_id', ids);
+      const { data, error } = await supabase.from('album_activity_reactions').select('activity_id, user_id, kind').in('activity_id', ids);
       if (error) throw error;
       return data as ReactionRow[];
     },

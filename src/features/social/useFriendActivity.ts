@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo } from 'react';
 
+import { isActivityInsert, mergeRecent } from '@/lib/recentFeed';
 import { supabase } from '@/lib/supabase';
 import { isFeedWorthy } from '@/lib/socialFeed';
 import type { AlbumActivityEvent, AlbumActivityType } from '@/types/album';
@@ -39,9 +40,9 @@ const PAGE = 120;
  * no rows instead of erroring.
  *
  * Realtime is subscribed without a filter: `postgres_changes` filters take one
- * column comparison, and there is no way to say "user_id in (…)". Every insert
- * on the table therefore wakes this query, and the refetch is what decides what
- * you are allowed to see.
+ * column comparison, and there is no way to say "user_id in (…)". Only inserts by
+ * selected authors affect this page. Complete rows patch the cached page directly;
+ * cold, incomplete or in-flight data uses the normal read.
  */
 export function useFriendActivity(authorIds: string[], selfId: string | undefined) {
   const queryClient = useQueryClient();
@@ -53,7 +54,7 @@ export function useFriendActivity(authorIds: string[], selfId: string | undefine
     queryFn: async () => {
       const { data, error } = await supabase
         .from('album_activity')
-        .select('*')
+        .select('id, user_id, album_id, album_key, album_title, type, details, created_at')
         .in('user_id', ids)
         .order('created_at', { ascending: false })
         .limit(PAGE);
@@ -68,9 +69,23 @@ export function useFriendActivity(authorIds: string[], selfId: string | undefine
     if (ids.length === 0) return;
     const channel = supabase
       .channel(`album_activity:feed:${Math.random().toString(36).slice(2)}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'album_activity' }, () =>
-        queryClient.invalidateQueries({ queryKey }),
-      )
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'album_activity' }, (payload) => {
+        const row = payload.new;
+        // Other public authors must not trigger a download of our whole page.
+        if (typeof row.user_id === 'string' && !ids.includes(row.user_id)) return;
+        // A cold or in-flight read remains authoritative, including privacy checks.
+        const snapshot = queryClient.getQueryState(queryKey);
+        if (!isActivityInsert(row, 'album') || !queryClient.getQueryData(queryKey) ||
+            snapshot?.fetchStatus === 'fetching') {
+          void queryClient.invalidateQueries({ queryKey });
+          return;
+        }
+        const event = normalizeActivity(row as ActivityRow);
+        // Realtime must not postpone the next authoritative catch-up read.
+        queryClient.setQueryData<AlbumActivityEvent[]>(queryKey,
+          (cached) => cached ? mergeRecent(cached, event, PAGE) : cached,
+          { updatedAt: snapshot?.dataUpdatedAt });
+      })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
