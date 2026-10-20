@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /** Wide enough for a code to be scanned across a table, narrow enough to stay a phone column on the web. */
@@ -21,7 +21,7 @@ export function QrScreenFrame({ title, backLabel, onBack, children }: QrScreenFr
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1 bg-background">
+    <KeyboardAvoidingView className="flex-1 bg-background" behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
       <ScrollView
         contentContainerClassName="flex-grow items-center gap-6 px-6"
         contentContainerStyle={{ paddingTop: insets.top + 12, paddingBottom: insets.bottom + 32 }}
@@ -52,6 +52,6 @@ export function QrScreenFrame({ title, backLabel, onBack, children }: QrScreenFr
           {children}
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }

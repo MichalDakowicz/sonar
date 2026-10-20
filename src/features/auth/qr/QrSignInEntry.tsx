@@ -26,6 +26,11 @@ export function QrSignInEntry({ disabled }: { disabled: boolean }) {
       >
         <Text className="font-medium text-foreground">{web ? QR_COPY.loginShowOnWeb : QR_COPY.loginScan}</Text>
       </Pressable>
+      {web && (
+        <Pressable accessibilityRole="button" disabled={disabled} onPress={() => router.push('/qr-scan' as Href)} className="items-center py-3">
+          <Text className="font-medium text-foreground">{QR_COPY.enterCode}</Text>
+        </Pressable>
+      )}
       {web && open && (
         <View className="rounded-2xl border border-border bg-card p-5">
           <WebLoginQr />

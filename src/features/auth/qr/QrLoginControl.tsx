@@ -1,5 +1,5 @@
 import { useRouter, type Href } from 'expo-router';
-import { Platform, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { QR_COPY } from './qrCopy';
 
@@ -31,9 +31,7 @@ export function QrLoginControl() {
         sub={QR_COPY.showRowSub}
         onPress={() => router.push('/qr-show' as Href)}
       />
-      {Platform.OS !== 'web' && (
-        <Row title={QR_COPY.scanRowTitle} sub={QR_COPY.scanRowSub} onPress={() => router.push('/qr-scan' as Href)} />
-      )}
+      <Row title={QR_COPY.scanRowTitle} sub={QR_COPY.scanRowSub} onPress={() => router.push('/qr-scan' as Href)} />
     </View>
   );
 }

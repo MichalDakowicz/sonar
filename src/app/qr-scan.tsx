@@ -1,6 +1,8 @@
 import { Redirect, type Href } from 'expo-router';
-import { Platform, Text } from 'react-native';
+import { useState } from 'react';
+import { Platform, Pressable, Text } from 'react-native';
 
+import { SignInCodeInput } from '@/components/qr/SignInCodeInput';
 import { QrNotice } from '@/components/qr/QrNotice';
 import { QrScanner } from '@/components/qr/QrScanner';
 import { QrScreenFrame } from '@/components/qr/QrScreenFrame';
@@ -17,8 +19,9 @@ import { useQrScan } from '@/features/auth/qr/useQrScan';
  * purpose: it is how a signed-out device gets in.
  */
 export default function QrScan() {
+  const [cameraOpen, setCameraOpen] = useState(false);
   const back = useBack();
-  const { signedIn, approver, requester, notice, onTarget } = useQrScan();
+  const { signedIn, approver, requester, notice, onTarget, onCode } = useQrScan();
   const a = approver.state;
   const r = requester.state;
 
@@ -31,15 +34,19 @@ export default function QrScan() {
 
   return (
     <QrScreenFrame title={QR_COPY.scanTitle} backLabel={QR_COPY.back} onBack={back}>
-      {Platform.OS === 'web' ? (
-        <QrNotice title={QR_COPY.scanTitle} body={QR_COPY.cameraOff} primary={{ label: QR_COPY.back, onPress: back }} />
-      ) : scanning ? (
+      {scanning ? (
         <>
-          <QrScanner
+          <SignInCodeInput copy={QR_COPY} onSubmit={(code) => void onCode(code)} />
+          {Platform.OS !== 'web' && !cameraOpen && (
+            <Pressable accessibilityRole="button" onPress={() => setCameraOpen(true)} className="items-center py-3">
+              <Text className="font-medium text-foreground">{QR_COPY.scanQr}</Text>
+            </Pressable>
+          )}
+          {Platform.OS !== 'web' && cameraOpen && <QrScanner
             copy={QR_COPY}
             hint={signedIn ? QR_COPY.scanHintSignedIn : QR_COPY.scanHintSignedOut}
             onTarget={onTarget}
-          />
+          />}
           {!!notice && <Text className="text-center text-sm text-foreground">{notice}</Text>}
         </>
       ) : a.phase === 'working' || r.phase === 'working' ? (

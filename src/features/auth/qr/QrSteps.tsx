@@ -34,15 +34,16 @@ export function ApprovalStep({ matchCode, requester, expiresAt, deciding, onDeci
   );
 }
 
-type ShowingStepProps = { payload: string; matchCode: string; expiresAt: string; help: string; size?: number };
+type ShowingStepProps = { signInCode?: string; payload: string; matchCode: string; expiresAt: string; help: string; size?: number };
 
 /** A code on screen, waiting to be scanned. */
-export function ShowingStep({ payload, matchCode, expiresAt, help, size }: ShowingStepProps) {
+export function ShowingStep({ signInCode, payload, matchCode, expiresAt, help, size }: ShowingStepProps) {
   const seconds = useSecondsLeft(expiresAt);
   return (
     <QrCodePanel
       copy={QR_COPY}
       payload={payload}
+      signInCode={signInCode}
       matchCode={matchCode}
       secondsLeft={seconds}
       help={help}

@@ -40,5 +40,5 @@ export function useQrScan() {
     [user, claim, join],
   );
 
-  return { signedIn: Boolean(user), approver, requester, notice, onTarget };
+  return { signedIn: Boolean(user), approver, requester, notice, onTarget, onCode: user ? approver.claimCode : requester.joinCode };
 }
