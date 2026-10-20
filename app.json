@@ -29,7 +29,7 @@
         }
       ],
       "package": "com.michaldakowicz.sonar",
-      "versionCode": 6
+      "versionCode": 7
     },
     "web": {
       "output": "single",
