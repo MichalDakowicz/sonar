@@ -1,6 +1,16 @@
 # Update notes
 
-## 2.3.1 — Unreleased
+## 2.4.1 — Unreleased
+
+## 2.4.0 — 2026-10-20
+
+### Added
+
+- Sign-in: enter a code from another Ping app without using the camera
+
+### Fixed
+
+- Inputs stay above the Android keyboard on full-screen forms
 
 ## 2.3.0 — 2026-10-15
 

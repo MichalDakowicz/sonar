@@ -31,6 +31,7 @@ export default function QrShow() {
         <QrNotice busy title={QR_COPY.gettingCode} />
       ) : state.phase === 'showing' ? (
         <ShowingStep
+          signInCode={state.signInCode}
           payload={state.payload}
           matchCode={state.matchCode}
           expiresAt={state.expiresAt}

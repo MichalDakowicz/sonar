@@ -6,6 +6,7 @@
  * wrong place. Every reader returns null for anything it does not recognise, and the
  * caller treats null as a failure.
  */
+import { readSignInCode } from './signInCode';
 import { describeRequester, isMatchCode, qrPayload, readQrPayload, type RequesterDetails } from './qrLogin';
 
 type Fields = Record<string, unknown>;
@@ -17,7 +18,7 @@ const isTime = (value: unknown): value is string => typeof value === 'string' &&
 export type Requester = ReturnType<typeof describeRequester>;
 
 /** A code the signed-out side asked for (`start`). */
-export type Started = { id: string; matchCode: string; expiresAt: string };
+export type Started = { id: string; matchCode: string; expiresAt: string; signInCode?: string };
 /** A code a signed-in phone asked for (`offer`) — and what its QR says. */
 export type Offered = Started & { payload: string };
 /** The pairing a signed-out device joined by scanning (`join`). */
@@ -26,14 +27,18 @@ export type Joined = { matchCode: string; expiresAt: string };
 export function readStart(answer: unknown): Started | null {
   if (!isFields(answer) || !isMatchCode(answer.match_code) || !isTime(answer.expires_at)) return null;
   const target = readQrPayload(qrPayload({ mode: 'web', id: String(answer.id) }));
-  return target ? { id: target.id, matchCode: answer.match_code, expiresAt: answer.expires_at } : null;
+  const signInCode = readSignInCode(answer.sign_in_code);
+  if (answer.sign_in_code !== undefined && !signInCode) return null;
+  return target ? { id: target.id, matchCode: answer.match_code, expiresAt: answer.expires_at, ...(signInCode ? { signInCode } : {}) } : null;
 }
 
 export function readOffer(answer: unknown): Offered | null {
   if (!isFields(answer) || !isMatchCode(answer.match_code) || !isTime(answer.expires_at)) return null;
   const payload = qrPayload({ mode: 'phone', id: String(answer.id), nonce: String(answer.nonce) });
   const target = readQrPayload(payload);
-  return target ? { id: target.id, payload, matchCode: answer.match_code, expiresAt: answer.expires_at } : null;
+  const signInCode = readSignInCode(answer.sign_in_code);
+  if (answer.sign_in_code !== undefined && !signInCode) return null;
+  return target ? { id: target.id, payload, matchCode: answer.match_code, expiresAt: answer.expires_at, ...(signInCode ? { signInCode } : {}) } : null;
 }
 
 export function readJoin(answer: unknown): Joined | null {

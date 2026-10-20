@@ -74,6 +74,14 @@ export const qrLogin = {
   join: async (id: string, nonce: string, challenge: string, label: string): Promise<Joined> =>
     understood(readJoin(await call('join', { id, nonce, challenge, label }))),
 
+  joinCode: async (code: string, challenge: string, label: string): Promise<Started> =>
+    understood(readStart(await call('join-code', { code, challenge, label }))),
+
+  claimCode: async (code: string) => {
+    const answer = await call('claim-code', { code });
+    return { ...understood(readClaim(answer)), id: understood(readStart(answer)).id };
+  },
+
   /** What became of the code, from the side that holds the verifier. */
   redeem: async (id: string, verifier: string): Promise<RequesterStep> =>
     understood(readRedeem(await call('redeem', { id, verifier }))),

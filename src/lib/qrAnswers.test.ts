@@ -6,6 +6,12 @@ const NONCE = 'AAAAAAAAAAAAAAAAAAAAAA';
 const SOON = '2030-01-01T00:00:00.000Z';
 
 describe('readStart', () => {
+  it('reads a manual sign-in code and refuses malformed codes while accepting old servers', () => {
+    expect(readStart({ id: ID, match_code: '42', expires_at: SOON, sign_in_code: 'ABCD-EFGH-JKLM-NPQR' }))
+      .toMatchObject({ signInCode: 'ABCDEFGHJKLMNPQR' });
+    expect(readStart({ id: ID, match_code: '42', expires_at: SOON, sign_in_code: '42' })).toBeNull();
+    expect(readOffer({ id: ID, nonce: NONCE, match_code: '42', expires_at: SOON, sign_in_code: '42' })).toBeNull();
+  });
   it('reads the code a browser asked for', () => {
     expect(readStart({ id: ID, match_code: '42', expires_at: SOON })).toEqual({ id: ID, matchCode: '42', expiresAt: SOON });
   });
