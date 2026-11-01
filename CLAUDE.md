@@ -6,9 +6,9 @@ Android is the practical target — the user tests on a physical device over ADB
 
 **Ping consists of Lidar, Sonar, Pulsar and Bazaar.** Radar and Cellar are separate
 products; preserve their historical shared schema and cloud services. Lidar is
-already on `ping-live`; Sonar's cutover is being prepared. Never restore a full
-cloud dump over local Lidar writes. See `docs/backend-cutover.md` and
-`../migration/SONAR-PLAN.md`. Accounts, profiles, friendships and privacy originate
+already on `ping-live`, alongside Sonar Android/web. Never restore a full
+cloud dump over local Lidar or Sonar writes. See `docs/backend-cutover.md`;
+detailed operational receipts are retained privately. Accounts, profiles, friendships and privacy originate
 in the historical shared Supabase project. Read
 `docs/shared-database.md` before touching anything under `supabase/` or any table Radar
 also reads. The retired Vite + Firebase web app is kept at `archive/` for reference.

@@ -1,9 +1,9 @@
 # Sonar native rewrite — status and resume brief
 
 Current migration work (2026-10-31) is documented in `docs/backend-cutover.md`.
-The native rewrite status below is historical. Sonar still runs against cloud;
-the self-hosted cutover is prepared but has not shipped. The Spotify client-secret
-exposure described below is being replaced with an authenticated server proxy.
+The native rewrite status below is historical. Sonar Android 2.4.1 and its web
+site now use Ping. The Spotify exposure described below is corrected through an
+authenticated proxy and credential rotation. Do not execute historical next actions.
 Do not re-run historical migration steps or restore cloud over populated Ping.
 
 **Purpose of this file:** everything needed to resume cold. If this file is mentioned,

@@ -2,9 +2,9 @@
 
 Current Ping membership is Lidar, Sonar, Pulsar and Bazaar. Radar and Cellar are
 separate products. Sonar's migration to the existing `ping-live` shared database
-is in preparation; it has not shipped. Lidar already writes locally, so never
+is complete for Android 2.4.1 and web. Lidar and Sonar write locally, so never
 replace local data with a full cloud restore. See `backend-cutover.md` and
-`../../migration/SONAR-PLAN.md`. Preserve local Auth/session state and Lidar
+the privately retained operational receipts. Preserve local Auth/session state and Lidar
 settings. Historical ownership and dependencies below remain relevant to the
 schema; they do not authorize releasing or changing Radar or Cellar.
 
