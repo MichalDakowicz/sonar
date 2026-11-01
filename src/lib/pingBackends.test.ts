@@ -1,18 +1,18 @@
 import { canShareSignIn } from './pingBackends';
+import { pingApp } from './pingApps';
 
 describe('staged backend migration', () => {
-  it('allows local Lidar and Sonar handoff in both directions', () => {
-    expect(canShareSignIn('lidar', 'sonar')).toBe(true);
-    expect(canShareSignIn('sonar', 'lidar')).toBe(true);
-  });
-  it.each(['pulsar', 'bazaar'] as const)('blocks cloud %s in both directions', sibling => {
-    for (const local of ['lidar', 'sonar'] as const) {
-      expect(canShareSignIn(local, sibling)).toBe(false);
-      expect(canShareSignIn(sibling, local)).toBe(false);
+  it('allows each pair of migrated apps in both directions', () => {
+    for (const self of ['lidar', 'sonar', 'pulsar'] as const) {
+      for (const sibling of ['lidar', 'sonar', 'pulsar'] as const) {
+        expect(canShareSignIn(self, sibling)).toBe(self !== sibling);
+      }
+      expect(canShareSignIn(self, 'bazaar')).toBe(false);
+      expect(canShareSignIn('bazaar', self)).toBe(false);
     }
   });
-  it('keeps the cloud siblings together', () => {
-    expect(canShareSignIn('pulsar', 'bazaar')).toBe(true);
+  it('excludes the separate products from sign-in', () => {
+    expect(pingApp('radar')).toBeNull();
+    expect(pingApp('cellar')).toBeNull();
   });
-  it('never offers itself', () => expect(canShareSignIn('sonar', 'sonar')).toBe(false));
 });

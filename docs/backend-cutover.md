@@ -1,5 +1,9 @@
 # Dedicated Ping backend — Sonar 2.4.1
 
+Pulsar's Android cutover is user-verified. Sonar 2.4.2 prepares reciprocal
+same-backend handoff with Pulsar; its own Android/web release checks remain
+pending. Bazaar stays on cloud, and Radar/Cellar remain excluded.
+
 Android 2.4.1 (code 8) and https://sonar-tracker.web.app use
 https://ping-api.dakowicz.xyz. The new auth storage key asks for a fresh sign-in
 after updating while preserving the existing account UUID and album data.

@@ -2,6 +2,10 @@
 
 ## 2.4.2 — Unreleased
 
+### Changed
+
+- Sign-in: continue with Pulsar after it joins Ping's dedicated server
+
 ## 2.4.1 — 2026-11-01
 
 ### Changed
