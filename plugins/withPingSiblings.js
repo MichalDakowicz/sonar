@@ -13,11 +13,9 @@
 const { withAndroidManifest } = require('expo/config-plugins');
 
 const PING_PACKAGES = [
-  'com.michaldakowicz.radar',
   'com.michaldakowicz.lidar',
   'com.michaldakowicz.sonar',
   'com.michaldakowicz.pulsar',
-  'com.michaldakowicz.cellar',
   'com.michaldakowicz.bazaar',
 ];
 

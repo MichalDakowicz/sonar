@@ -41,7 +41,7 @@ export function ShareFlowBody({ text, onDone }: { text: string | null; onDone: (
       <EmptyState
         icon={<Disc3 size={36} color={COLORS.mutedDeep} />}
         title="Spotify lookup is off"
-        description="Add EXPO_PUBLIC_SPOTIFY_CLIENT_ID and _SECRET to .env to resolve shared links."
+        description="Spotify links are temporarily unavailable. Try again shortly."
       />
     );
   }

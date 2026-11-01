@@ -16,6 +16,7 @@ installWebCrypto();
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
+    storageKey: 'sonar-self-hosted-auth-v1',
     storage: AsyncStorage,
     autoRefreshToken: true,
     persistSession: true,

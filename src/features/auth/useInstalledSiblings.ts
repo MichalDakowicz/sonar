@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 
 import { siblingsOf, type PingApp } from '@/lib/pingApps';
+import { canShareSignIn } from '@/lib/pingBackends';
 
 import { SELF } from './siblingHandoff';
 
@@ -26,10 +27,11 @@ export function useInstalledSiblings(): InstalledSibling[] {
 
   useEffect(() => {
     if (Platform.OS !== 'android' || !SELF) return;
+    const self = SELF;
     let live = true;
 
     Promise.all(
-      siblingsOf(SELF.key).map(async (app): Promise<InstalledSibling | null> => {
+      siblingsOf(self.key).filter((app) => canShareSignIn(self.key, app.key)).map(async (app): Promise<InstalledSibling | null> => {
         try {
           const icon = await IntentLauncher.getApplicationIconAsync(app.androidPackage);
           return { app, icon: icon || null };

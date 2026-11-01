@@ -97,7 +97,7 @@ type RawSearch = {
 export async function searchSubjects(query: string, limit = 6): Promise<RatingCandidate[]> {
   if (!query.trim()) return [];
   const data = await spotifyGet<RawSearch>(
-    `/search?q=${encodeURIComponent(query)}&type=album,track,artist&limit=${limit}`,
+    `/search?q=${encodeURIComponent(query)}&type=album,track,artist&limit=${Math.max(1, Math.min(10, limit))}`,
   );
 
   return [
