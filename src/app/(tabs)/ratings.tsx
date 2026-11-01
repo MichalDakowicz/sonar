@@ -100,7 +100,7 @@ function RatingsScreen() {
                 <EmptyState
                   icon={<Star size={36} color={COLORS.mutedDeep} />}
                   title="Spotify search is off"
-                  description="Add EXPO_PUBLIC_SPOTIFY_CLIENT_ID and _SECRET to .env to look releases up. Anything already on your shelf can still be rated from the board below."
+                  description="Search is temporarily unavailable. You can still rate anything on your shelf."
                 />
               ) : search.loading && search.results.length === 0 ? (
                 <SearchSpinner />

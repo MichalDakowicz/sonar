@@ -1,4 +1,14 @@
-# One database, two apps
+# Shared database contract
+
+Current Ping membership is Lidar, Sonar, Pulsar and Bazaar. Radar and Cellar are
+separate products. Sonar's migration to the existing `ping-live` shared database
+is complete for Android 2.4.1 and web. Lidar and Sonar write locally, so never
+replace local data with a full cloud restore. See `backend-cutover.md` and
+the privately retained operational receipts. Preserve local Auth/session state and Lidar
+settings. Historical ownership and dependencies below remain relevant to the
+schema; they do not authorize releasing or changing Radar or Cellar.
+
+## Historical cloud architecture
 
 Sonar and Radar run on the **same Supabase project**. Not a copy, not a sync — the same
 rows. This is a deliberate constraint: the free plan is one project, and both apps belong

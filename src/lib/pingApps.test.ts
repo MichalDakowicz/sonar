@@ -18,7 +18,7 @@ import {
 } from './pingApps';
 
 const STATE = 'a'.repeat(48);
-const radar = pingApp('radar')!;
+const sonar = pingApp('sonar')!;
 const lidar = pingApp('lidar')!;
 
 /** Mirrors how expo-router hands over the query of a link. */
@@ -36,12 +36,14 @@ describe('the family', () => {
   it('knows every app by its scheme and nothing else', () => {
     expect(pingApp('sonar')?.androidPackage).toBe('com.michaldakowicz.sonar');
     expect(pingApp('vidar')).toBeNull();
+    expect(pingApp('radar')).toBeNull();
+    expect(pingApp('cellar')).toBeNull();
     expect(pingApp(undefined)).toBeNull();
   });
 
   it('leaves the asking app out of its own siblings', () => {
     const keys = siblingsOf('pulsar').map((app) => app.key);
-    expect(keys).toEqual(['radar', 'lidar', 'sonar', 'cellar', 'bazaar']);
+    expect(keys).toEqual(['lidar', 'sonar', 'bazaar']);
   });
 
   it('names the activity Expo prebuild generates', () => {
@@ -90,9 +92,9 @@ describe('signing certificates', () => {
   });
 
   it('shares one family key between the four apps that were on the debug key', () => {
-    const family = new Set(['lidar', 'sonar', 'pulsar', 'cellar', 'bazaar'].map((key) => pingApp(key)!.signers.join()));
+    const family = new Set(['lidar', 'sonar', 'pulsar', 'bazaar'].map((key) => pingApp(key)!.signers.join()));
     expect(family.size).toBe(1);
-    expect(radar.signers.join()).not.toBe([...family][0]);
+
   });
 
   it('spells a digest the same however it is written', () => {
@@ -101,29 +103,29 @@ describe('signing certificates', () => {
   });
 
   describe('isGenuine', () => {
-    const [radarSigner] = radar.signers;
+    const [sonarSigner] = sonar.signers;
 
     it('accepts the certificate the app ships under, in any spelling', () => {
-      expect(isGenuine(radar, [radarSigner])).toBe(true);
-      expect(isGenuine(radar, [radarSigner.toUpperCase()])).toBe(true);
+      expect(isGenuine(sonar, [sonarSigner])).toBe(true);
+      expect(isGenuine(sonar, [sonarSigner.toUpperCase()])).toBe(true);
       expect(isGenuine(lidar, [lidar.signers[0].toUpperCase()])).toBe(true);
     });
 
     it('refuses a certificate that belongs to another app', () => {
-      expect(isGenuine(lidar, [radarSigner])).toBe(false);
-      expect(isGenuine(radar, ['0'.repeat(64)])).toBe(false);
+      expect(isGenuine(lidar, ['d'.repeat(64)])).toBe(false);
+      expect(isGenuine(sonar, ['0'.repeat(64)])).toBe(false);
     });
 
     it('refuses an app signed with anything it did not pin, even beside a pinned one', () => {
-      expect(isGenuine(radar, [radarSigner, '0'.repeat(64)])).toBe(false);
+      expect(isGenuine(sonar, [sonarSigner, '0'.repeat(64)])).toBe(false);
     });
 
     it('refuses when nothing was found', () => {
-      expect(isGenuine(radar, [])).toBe(false);
+      expect(isGenuine(sonar, [])).toBe(false);
     });
 
     it('refuses an app that has no pin, rather than waving it through', () => {
-      expect(isGenuine({ ...radar, signers: [] }, [radarSigner])).toBe(false);
+      expect(isGenuine({ ...sonar, signers: [] }, [sonarSigner])).toBe(false);
     });
   });
 });
@@ -140,45 +142,45 @@ describe('stateFrom', () => {
 
 describe('readShareRequest', () => {
   it('reads back a request built for this donor', () => {
-    const params = paramsOf(shareRequestUrl(radar, lidar, STATE));
-    expect(readShareRequest(params, 'radar')).toEqual({ requester: lidar, state: STATE });
+    const params = paramsOf(shareRequestUrl(sonar, lidar, STATE));
+    expect(readShareRequest(params, 'sonar')).toEqual({ requester: lidar, state: STATE });
   });
 
   it('never answers itself', () => {
-    expect(readShareRequest({ for: 'radar', state: STATE }, 'radar')).toBeNull();
+    expect(readShareRequest({ for: 'sonar', state: STATE }, 'sonar')).toBeNull();
   });
 
   it('refuses an app outside the family', () => {
-    expect(readShareRequest({ for: 'evil', state: STATE }, 'radar')).toBeNull();
+    expect(readShareRequest({ for: 'evil', state: STATE }, 'sonar')).toBeNull();
   });
 
   it('refuses a missing or malformed state', () => {
-    expect(readShareRequest({ for: 'lidar' }, 'radar')).toBeNull();
-    expect(readShareRequest({ for: 'lidar', state: 'short' }, 'radar')).toBeNull();
-    expect(readShareRequest({ for: 'lidar', state: `${STATE}&x=1` }, 'radar')).toBeNull();
+    expect(readShareRequest({ for: 'lidar' }, 'sonar')).toBeNull();
+    expect(readShareRequest({ for: 'lidar', state: 'short' }, 'sonar')).toBeNull();
+    expect(readShareRequest({ for: 'lidar', state: `${STATE}&x=1` }, 'sonar')).toBeNull();
   });
 
   it('takes the first of a repeated param', () => {
-    expect(readShareRequest({ for: ['lidar', 'sonar'], state: STATE }, 'radar')?.requester).toBe(lidar);
+    expect(readShareRequest({ for: ['lidar', 'sonar'], state: STATE }, 'sonar')?.requester).toBe(lidar);
   });
 });
 
 describe('readReturn', () => {
   const now = 1_000_000;
-  const pending: PendingHandoff = { state: STATE, donor: 'radar', at: now };
+  const pending: PendingHandoff = { state: STATE, donor: 'sonar', at: now };
 
   it('accepts the token that answers the open request', () => {
     const params = paramsOf(returnUrl(lidar, STATE, { tokenHash: 'deadbeef'.repeat(7) }));
     expect(readReturn(params, pending, now + 1000)).toEqual({
       kind: 'token',
       tokenHash: 'deadbeef'.repeat(7),
-      donor: radar,
+      donor: sonar,
     });
   });
 
   it('carries a failure through', () => {
     const params = paramsOf(returnUrl(lidar, STATE, { failure: 'signed-out' }));
-    expect(readReturn(params, pending, now)).toEqual({ kind: 'failure', failure: 'signed-out', donor: radar });
+    expect(readReturn(params, pending, now)).toEqual({ kind: 'failure', failure: 'signed-out', donor: sonar });
   });
 
   it('reads anything unrecognised as a plain failure', () => {
@@ -210,8 +212,8 @@ describe('readReturn', () => {
 
 describe('readHandoffLink', () => {
   it('reads a request back from its URL', () => {
-    const url = shareRequestUrl(radar, lidar, STATE);
-    expect(readHandoffLink(url, 'radar')).toEqual({
+    const url = shareRequestUrl(sonar, lidar, STATE);
+    expect(readHandoffLink(url, 'sonar')).toEqual({
       route: 'share-sign-in',
       href: `/share-sign-in?for=lidar&state=${STATE}`,
       key: `share-sign-in:${STATE}`,
@@ -219,44 +221,44 @@ describe('readHandoffLink', () => {
   });
 
   it('reads an answer back from its URL', () => {
-    const url = returnUrl(radar, STATE, { tokenHash: 'deadbeef'.repeat(7) });
-    expect(readHandoffLink(url, 'radar')).toMatchObject({ route: 'sign-in-return', key: `sign-in-return:${STATE}` });
+    const url = returnUrl(sonar, STATE, { tokenHash: 'deadbeef'.repeat(7) });
+    expect(readHandoffLink(url, 'sonar')).toMatchObject({ route: 'sign-in-return', key: `sign-in-return:${STATE}` });
   });
 
   it('reads a failure answer too, so a signed-out donor is still reported', () => {
-    const url = returnUrl(radar, STATE, { failure: 'signed-out' });
-    expect(readHandoffLink(url, 'radar')?.href).toBe(`/sign-in-return?state=${STATE}&error=signed-out`);
+    const url = returnUrl(sonar, STATE, { failure: 'signed-out' });
+    expect(readHandoffLink(url, 'sonar')?.href).toBe(`/sign-in-return?state=${STATE}&error=signed-out`);
   });
 
   it('accepts a slash before the query, as Android prints it', () => {
-    expect(readHandoffLink(`radar://share-sign-in/?for=lidar&state=${STATE}`, 'radar')).not.toBeNull();
+    expect(readHandoffLink(`sonar://share-sign-in/?for=lidar&state=${STATE}`, 'sonar')).not.toBeNull();
   });
 
   it('ignores a link addressed to another app', () => {
-    expect(readHandoffLink(shareRequestUrl(lidar, radar, STATE), 'radar')).toBeNull();
+    expect(readHandoffLink(shareRequestUrl(lidar, sonar, STATE), 'sonar')).toBeNull();
   });
 
   it('ignores every other route on this scheme', () => {
-    expect(readHandoffLink(`radar://settings?state=${STATE}`, 'radar')).toBeNull();
-    expect(readHandoffLink(`radar://movie/1?state=${STATE}`, 'radar')).toBeNull();
-    expect(readHandoffLink(`radar://share-sign-in-extra?state=${STATE}`, 'radar')).toBeNull();
+    expect(readHandoffLink(`sonar://settings?state=${STATE}`, 'sonar')).toBeNull();
+    expect(readHandoffLink(`sonar://movie/1?state=${STATE}`, 'sonar')).toBeNull();
+    expect(readHandoffLink(`sonar://share-sign-in-extra?state=${STATE}`, 'sonar')).toBeNull();
   });
 
   it('ignores a missing or malformed state', () => {
-    expect(readHandoffLink('radar://share-sign-in?for=lidar', 'radar')).toBeNull();
-    expect(readHandoffLink('radar://share-sign-in?for=lidar&state=nope', 'radar')).toBeNull();
-    expect(readHandoffLink('radar://share-sign-in', 'radar')).toBeNull();
+    expect(readHandoffLink('sonar://share-sign-in?for=lidar', 'sonar')).toBeNull();
+    expect(readHandoffLink('sonar://share-sign-in?for=lidar&state=nope', 'sonar')).toBeNull();
+    expect(readHandoffLink('sonar://share-sign-in', 'sonar')).toBeNull();
   });
 
   it('ignores a URL that is not a link at all', () => {
-    expect(readHandoffLink('', 'radar')).toBeNull();
-    expect(readHandoffLink('https://example.com/share-sign-in?state=' + STATE, 'radar')).toBeNull();
+    expect(readHandoffLink('', 'sonar')).toBeNull();
+    expect(readHandoffLink('https://example.com/share-sign-in?state=' + STATE, 'sonar')).toBeNull();
   });
 
   it('keys a link the way the routes key it', () => {
-    const link = readHandoffLink(shareRequestUrl(radar, lidar, STATE), 'radar');
+    const link = readHandoffLink(shareRequestUrl(sonar, lidar, STATE), 'sonar');
     expect(link?.key).toBe(handoffKey('share-sign-in', STATE));
-    expect(handoffKeyOf('share-sign-in', paramsOf(shareRequestUrl(radar, lidar, STATE)))).toBe(link?.key);
+    expect(handoffKeyOf('share-sign-in', paramsOf(shareRequestUrl(sonar, lidar, STATE)))).toBe(link?.key);
     expect(handoffKeyOf('share-sign-in', {})).toBeNull();
     expect(handoffKeyOf('share-sign-in', { state: 'nope' })).toBeNull();
   });

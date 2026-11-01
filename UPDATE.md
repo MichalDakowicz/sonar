@@ -1,6 +1,19 @@
 # Update notes
 
-## 2.4.1 — Unreleased
+## 2.4.3 — Unreleased
+
+## 2.4.2 — 2026-11-01
+
+### Changed
+
+- Sign-in: continue with Pulsar after it joins Ping's dedicated server
+
+## 2.4.1 — 2026-11-01
+
+### Changed
+
+- Sign-in uses Ping's dedicated server and asks you to sign in again after updating
+- Spotify search keeps catalogue credentials on the server
 
 ## 2.4.0 — 2026-10-20
 
