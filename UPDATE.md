@@ -1,6 +1,8 @@
 # Update notes
 
-## 2.4.2 — Unreleased
+## 2.4.3 — Unreleased
+
+## 2.4.2 — 2026-11-01
 
 ### Changed
 
