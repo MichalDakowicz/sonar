@@ -16,6 +16,7 @@ import {
   type ShareRequest,
 } from '@/lib/pingApps';
 import { supabase } from '@/lib/supabase';
+import { canShareSignIn } from '@/lib/pingBackends';
 import { usePendingSignIn } from '@/store/pendingSignIn';
 
 import { isGenuineInstall } from './pingSigning';
@@ -58,6 +59,7 @@ async function launch(app: PingApp, url: string): Promise<void> {
  */
 export async function requestSiblingSignIn(donor: PingApp): Promise<void> {
   if (!SELF) throw new Error('This build does not know which Ping app it is');
+  if (!canShareSignIn(SELF.key, donor.key)) throw new Error('This app uses a different sign-in server');
   if (!isGenuineInstall(donor)) throw new Error(`Couldn't verify ${donor.name} on this phone`);
   const state = stateFrom(getRandomBytes(24));
   usePendingSignIn.getState().open({ state, donor: donor.key, at: Date.now() });
@@ -81,6 +83,7 @@ async function mintAnswer(): Promise<HandoffAnswer> {
  * token exists for it to take.
  */
 async function answerFor(requester: PingApp, signedIn: boolean): Promise<HandoffAnswer> {
+  if (!SELF || !canShareSignIn(SELF.key, requester.key)) return { failure: 'failed' };
   if (!isGenuineInstall(requester)) return { failure: 'failed' };
   return signedIn ? mintAnswer() : { failure: 'signed-out' };
 }
@@ -109,6 +112,7 @@ export async function completeSiblingSignIn(
   if (outcome.kind !== 'token') return outcome;
 
   const failed: ReturnOutcome = { kind: 'failure', failure: 'failed', donor: outcome.donor };
+  if (!SELF || !canShareSignIn(SELF.key, outcome.donor.key)) return failed;
   try {
     const { error } = await supabase.auth.verifyOtp({ token_hash: outcome.tokenHash, type: 'email' });
     return error ? failed : outcome;

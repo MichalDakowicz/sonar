@@ -14,7 +14,7 @@
  * Identical in every Ping app. Pure — no React, no react-native, no client.
  */
 
-export type PingAppKey = 'radar' | 'lidar' | 'sonar' | 'pulsar' | 'cellar' | 'bazaar';
+export type PingAppKey = 'lidar' | 'sonar' | 'pulsar' | 'bazaar';
 
 export type PingApp = {
   /** Also the app's URL scheme. */
@@ -30,12 +30,6 @@ export type PingApp = {
 };
 
 /**
- * Radar's upload key — private. When Radar ships through Play, add Play's
- * app-signing SHA-256 beside it: an install from the store is signed with that.
- */
-const RADAR_SIGNER = 'd71a5f6ddd16a9ef9aa43538d2581ea4dc7efdc9d45f99693d7ce0c963f7181e';
-
-/**
  * The Ping family key, shared by Lidar, Sonar, Pulsar, Cellar and Bazaar — private, kept in
  * `<workspace>/credentials/` and applied by plugins/withPingSigning.js. These apps used
  * to sign with the stock debug keystore Expo prebuild writes into `android/app/`: one
@@ -45,11 +39,9 @@ const RADAR_SIGNER = 'd71a5f6ddd16a9ef9aa43538d2581ea4dc7efdc9d45f99693d7ce0c963
 const FAMILY_SIGNER = 'c72fdb8bb5d83face122d1e40f5bbe702f7433507ef3d4493a0b0325dc59610b';
 
 export const PING_APPS: readonly PingApp[] = [
-  { key: 'radar', name: 'Radar', androidPackage: 'com.michaldakowicz.radar', signers: [RADAR_SIGNER] },
   { key: 'lidar', name: 'Lidar', androidPackage: 'com.michaldakowicz.lidar', signers: [FAMILY_SIGNER] },
   { key: 'sonar', name: 'Sonar', androidPackage: 'com.michaldakowicz.sonar', signers: [FAMILY_SIGNER] },
   { key: 'pulsar', name: 'Pulsar', androidPackage: 'com.michaldakowicz.pulsar', signers: [FAMILY_SIGNER] },
-  { key: 'cellar', name: 'Cellar', androidPackage: 'com.michaldakowicz.cellar', signers: [FAMILY_SIGNER] },
   { key: 'bazaar', name: 'Bazaar', androidPackage: 'com.michaldakowicz.bazaar', signers: [FAMILY_SIGNER] },
 ];
 

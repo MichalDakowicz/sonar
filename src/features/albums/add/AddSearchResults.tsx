@@ -38,7 +38,7 @@ export function AddSearchResults({
       <EmptyState
         icon={<Disc3 size={36} color={COLORS.mutedDeep} />}
         title="Spotify search is off"
-        description="Add EXPO_PUBLIC_SPOTIFY_CLIENT_ID and _SECRET to .env to look albums up, or add one by hand below."
+        description="Search is temporarily unavailable. You can still add an album by hand."
       />
     );
   }
