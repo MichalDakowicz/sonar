@@ -2,6 +2,10 @@
 
 ## 2.4.3 — Unreleased
 
+### Changed
+
+- Sign-in: continue with Bazaar on Ping's dedicated server
+
 ## 2.4.2 — 2026-11-01
 
 ### Changed
