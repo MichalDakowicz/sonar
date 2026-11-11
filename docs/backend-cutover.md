@@ -1,4 +1,12 @@
-# Dedicated Ping backend — Sonar 2.4.2
+# Dedicated Ping backend — Sonar 2.4.3
+
+Sonar 2.4.3/code 10 enables sign-in with Bazaar after its migration to Ping.
+The signed APK is installed in place; actual native handoff passed in both
+directions using app-local sign-out. All 367 tests, lint, TypeScript, signature
+and secret checks pass. All 24 web files match the existing Firebase site.
+Radar and Cellar remain excluded. PR #21 stays open and unmerged.
+
+## Earlier 2.4.2 release
 
 Pulsar's Android cutover is user-verified. Sonar 2.4.2/code 9 enables reciprocal
 same-backend handoff with Pulsar. Actual handoff passed in both directions on

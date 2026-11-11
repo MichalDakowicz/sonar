@@ -1,5 +1,11 @@
 # Sonar native rewrite — status and resume brief
 
+Latest release (2026-11-11): Sonar 2.4.3 enables native sign-in with Bazaar.
+Both handoff directions passed on the phone using app-local sign-out. The
+signed update installed and launched without crashes; all 367 tests, lint,
+TypeScript and artifact checks pass. Web's 24 files match live hosting.
+See `docs/backend-cutover.md`; the rewrite history below is superseded.
+
 Current migration work (2026-10-31) is documented in `docs/backend-cutover.md`.
 The native rewrite status below is historical. Sonar Android 2.4.1 and its web
 site now use Ping. The Spotify exposure described below is corrected through an
